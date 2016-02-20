@@ -5,15 +5,16 @@
   "main": "index.js",
   "scripts": {
     "start": "gulp",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.15.0",
+    "body-parser": "1.15.0",
     "express": "4.13.4",
-    "gulp": "^3.9.1",
-    "gulp-nodemon": "^2.0.6",
-    "mongoose": "^4.4.3"
+    "gulp": "3.9.1",
+    "gulp-nodemon": "2.0.6",
+    "jasmine": "2.4.1",
+    "mongoose": "4.4.3"
   }
 }

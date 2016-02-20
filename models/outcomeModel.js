@@ -3,19 +3,24 @@ var mongoose = require('mongoose'),
 
 var outcomeModel = new Schema({
     typeName: {
-        type: String
+        type: String,
+        required: true
     },
     firstStory: {
-        type: String
+        type: String,
+        required: true
     },
     secondStory: {
-        type: String
+        type: String,
+        required: true
     },
     thirdStory: {
-        type: String
+        type: String,
+        required: true
     },
     effectiveDate: {
-        type: Date
+        type: Date,
+        required: true
     }
 });
 

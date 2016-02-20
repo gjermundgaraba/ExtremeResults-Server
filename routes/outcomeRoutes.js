@@ -3,26 +3,11 @@ var express = require('express');
 var routes = function (Outcome) {
     var outcomeRouter = express.Router();
 
+    var outcomeController = require('../controllers/outcomeController')(Outcome);
+
     outcomeRouter.route('/')
-        .get(function (req, res) {
-            Outcome.find(function (error, outcomes) {
-                if (error) {
-                    res.status(500).send(error);
-                } else {
-                    res.json(outcomes);
-                }
-            });
-        })
-        .post(function (req, res) {
-            var outcome = new Outcome(req.body);
-            outcome.save(function (err) {
-                if (err) {
-                    res.status(500).send(error);
-                } else {
-                    res.status(201).send(outcome);
-                }
-            });
-        });
+        .get(outcomeController.get)
+        .post(outcomeController.post);
 
     outcomeRouter.use('/:outcomeId', function (req, res, next) {
         Outcome.findById(req.params.outcomeId, function (err, outcome) {
