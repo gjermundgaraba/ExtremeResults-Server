@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "gulp",
-    "test": "jasmine"
+    "test": "jasmine",
+    "it": "gulp it"
   },
   "author": "",
   "license": "ISC",
@@ -16,5 +17,12 @@
     "gulp-nodemon": "2.0.6",
     "jasmine": "2.4.1",
     "mongoose": "4.4.3"
+  },
+  "devDependencies": {
+    "gulp-env": "^0.4.0",
+    "gulp-exit": "0.0.2",
+    "gulp-mocha": "^2.2.0",
+    "should": "^8.2.2",
+    "supertest": "^1.2.0"
   }
 }

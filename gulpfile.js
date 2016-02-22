@@ -1,5 +1,9 @@
 var gulp = require('gulp'),
-    nodemon = require('gulp-nodemon');
+    nodemon = require('gulp-nodemon'),
+    env = require('gulp-env'),
+    mocha = require('gulp-mocha'),
+    supertest = require('supertest'),
+    exit = require('gulp-exit');
 
 
 gulp.task('default', function () {
@@ -13,4 +17,18 @@ gulp.task('default', function () {
     }).on('restart', function () {
         console.log('Restarting...');
     });
+});
+
+gulp.task('it', function () {
+    env({
+       vars: {
+           ENV: 'test',
+           PORT: 3333
+       }
+    });
+    gulp.src('tests/it/*.js', {read: false})
+        .pipe(mocha({
+            reporter: 'nyan'
+        }))
+        .pipe(exit());
 });

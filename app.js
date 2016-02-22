@@ -2,25 +2,34 @@ var express = require('express'),
     mongoose = require('mongoose'),
     bodyParser = require('body-parser');
 
-var db = mongoose.connect('mongodb://localhost/xr');
+var db;
 
-var Outcome = require('./models/outcomeModel');
+if (process.env.ENV === 'test') {
+    db = mongoose.connect('mongodb://localhost/xr_it');
+} else {
+    db = mongoose.connect('mongodb://localhost/xr');
+}
 
 var app = express();
-
 var port = process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 
+var Outcome = require('./models/outcomeModel');
+var Reflection = require('./models/reflectionModel');
+
 var outcomeRouter = require('./routes/outcomeRoutes')(Outcome);
+var reflectionRouter = require('./routes/reflectionRoutes')(Reflection);
 
 app.use('/api/outcomes', outcomeRouter);
+app.use('/api/reflections', reflectionRouter);
 
-app.get('/', function(request, response) {
-    response.send('Hello World!!!');
+
+var server = app.listen(port);
+
+server.on('close', function () {
+    mongoose.connection.close();
 });
 
-app.listen(port, function () {
-    console.log('Extreme Results server running on PORT: ' + port);
-});
+module.exports = server;
