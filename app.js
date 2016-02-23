@@ -18,12 +18,15 @@ app.use(bodyParser.json());
 
 var Outcome = require('./models/outcomeModel');
 var Reflection = require('./models/reflectionModel');
+var HotSpotBucket = require('./models/hotSpotBucketModel');
 
 var outcomeRouter = require('./routes/outcomeRoutes')(Outcome);
 var reflectionRouter = require('./routes/reflectionRoutes')(Reflection);
+var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket);
 
 app.use('/api/outcomes', outcomeRouter);
 app.use('/api/reflections', reflectionRouter);
+app.use('/api/hotSpotBuckets', hotSpotBucketRouter);
 
 
 var server = app.listen(port);
