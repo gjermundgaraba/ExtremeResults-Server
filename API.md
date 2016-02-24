@@ -48,16 +48,16 @@ Function to get all related entries for the reflection
 ## HotSpotBuckets
 
 ### GET /api/hotspotbuckets
-Not Implemented
+Implemented
 
 ### POST /api/hotspotbuckets
-Not Implemented
+Implemented
 
 ### PUT /api/hotspotbuckets/:hotspotBucketId
-Not Implemented
+Implemented
 
 ### DELETE /api/hotspotbuckets/:hotspotBucketId
-Not Implemented
+Implemented
 
 
 ## Functions
