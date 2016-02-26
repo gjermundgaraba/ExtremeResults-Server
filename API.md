@@ -17,10 +17,6 @@ Implemented
 ### DELETE /api/outcomes/outcomeId
 Implemented
 
-### GET /api/outcomes/:outcomeId/related
-Not Implemented
-Function to get all related entries for the outcome
-
 
 
 ## Reflections
@@ -40,9 +36,27 @@ Implemented
 ### DELETE /api/reflections/:reflectionId
 Implemented
 
-### GET /api/reflections/: reflectionId/related
+
+
+## Related
+
+### GET /api/related/outcomes?typeName=outcomeType
 Not Implemented
-Function to get all related entries for the reflection
+Function to get all related entries for outcomes of type typeName
+
+Daily:
+Current Monday Vision (Weekly outcome) if any.
+
+Weekly:
+Last Friday Reflection if any.
+
+
+### GET /api/related/reflections?typeName=reflectionType
+Not Implemented
+Function to get all related entries for reflections of type typeName
+
+Weekly:
+Last Friday Reflection (Weekly Reflection) if any.
 
 
 ## HotSpotBuckets
