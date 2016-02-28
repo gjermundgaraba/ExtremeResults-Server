@@ -41,7 +41,7 @@ Implemented
 ## Related
 
 ### GET /api/related/outcomes?typeName=outcomeType
-Not Implemented
+Implemented
 Function to get all related entries for outcomes of type typeName
 
 Daily:

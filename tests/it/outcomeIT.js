@@ -16,8 +16,10 @@ describe('Outcome ITs', function () {
     });
 
     afterEach(function (done) {
-        Outcome.remove().exec();
-        server.close(done);
+        Outcome.remove().exec()
+            .then(function () {
+                server.close(done);
+            });
     });
 
     describe('/outcomes', function () {

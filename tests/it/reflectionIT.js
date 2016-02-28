@@ -16,8 +16,11 @@ describe('Reflection ITs', function () {
     });
 
     afterEach(function (done) {
-        Reflection.remove().exec();
-        server.close(done);
+        Reflection.remove().exec()
+            .then(function () {
+                server.close(done);
+            });
+
     });
 
     describe('/reflections', function () {

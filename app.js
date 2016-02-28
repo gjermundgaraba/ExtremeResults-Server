@@ -23,10 +23,12 @@ var HotSpotBucket = require('./models/hotSpotBucketModel');
 var outcomeRouter = require('./routes/outcomeRoutes')(Outcome);
 var reflectionRouter = require('./routes/reflectionRoutes')(Reflection);
 var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket);
+var relatedRouter = require('./routes/relatedRoutes')(Outcome, Reflection);
 
 app.use('/api/outcomes', outcomeRouter);
 app.use('/api/reflections', reflectionRouter);
 app.use('/api/hotSpotBuckets', hotSpotBucketRouter);
+app.use('/api/related', relatedRouter);
 
 
 var server = app.listen(port);

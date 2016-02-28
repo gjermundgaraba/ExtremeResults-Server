@@ -16,8 +16,10 @@ describe('Hot Spot Bucket ITs', function () {
     });
 
     afterEach(function (done) {
-        HotSpotBucket.remove().exec();
-        server.close(done);
+        HotSpotBucket.remove().exec()
+            .then(function () {
+                server.close(done);
+            });
     });
 
     describe('/hotSpotBuckets', function () {
