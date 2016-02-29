@@ -24,11 +24,13 @@ var outcomeRouter = require('./routes/outcomeRoutes')(Outcome);
 var reflectionRouter = require('./routes/reflectionRoutes')(Reflection);
 var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket);
 var relatedRouter = require('./routes/relatedRoutes')(Outcome, Reflection);
+var activeEntriesRouter = require('./routes/activeEntriesRoutes')(Outcome);
 
 app.use('/api/outcomes', outcomeRouter);
 app.use('/api/reflections', reflectionRouter);
 app.use('/api/hotSpotBuckets', hotSpotBucketRouter);
 app.use('/api/related', relatedRouter);
+app.use('/api/activeEntries', activeEntriesRouter);
 
 
 var server = app.listen(port);

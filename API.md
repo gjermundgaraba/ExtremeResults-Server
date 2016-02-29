@@ -78,15 +78,12 @@ Implemented
 
 Special functions that are not directly tied to a data type
 
-### GET /api/entries
-Not Implemented
-Function to get all Agile Results entries of all types (Daily Outcomes, Monday Visions, Weekly Reflections, etc...)
-
 ### GET /api/activeEntries
-Not Implemented
+Implemented
 
 ### DELETE /api/forTest
 Not Implemented
+Used for e2e tests only!
 This API is never going into production. It is needed on test server to clear the database between e2e test runs.
 If we can find a better way to do this (perhaps without clearing users? Don't know about that...) that would be best. 
 I don't like this API too much.
