@@ -1,6 +1,8 @@
 var express = require('express'),
     mongoose = require('mongoose'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    passport = require('passport'),
+    LocalStrategy = require('passport-local').Strategy;
 
 var db;
 
@@ -9,6 +11,23 @@ if (process.env.ENV === 'test') {
 } else {
     db = mongoose.connect('mongodb://localhost/xr');
 }
+
+var User = require('./models/userModel');
+
+passport.use(new LocalStrategy(
+    function(username, password, done) {
+        User.findOne({ username: username }, function(err, user) {
+            if (err) { return done(err); }
+            if (!user) {
+                return done(null, false, { message: 'Incorrect username.' });
+            }
+            if (!user.validPassword(password)) {
+                return done(null, false, { message: 'Incorrect password.' });
+            }
+            return done(null, user);
+        });
+    }
+));
 
 var app = express();
 var port = process.env.PORT || 3000;
