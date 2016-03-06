@@ -1,4 +1,4 @@
-describe("Related For Outcomes Controller", function() {
+describe("Related For Reflections Controller", function() {
     var relatedForOutcomesController,
         responseMock,
         requestMock,
@@ -43,25 +43,11 @@ describe("Related For Outcomes Controller", function() {
             json: function () {}
         };
 
-        relatedForOutcomesController = require('../../controllers/relatedForOutcomesController')(OutcomeMock, ReflectionMock, momentMock);
+        relatedForOutcomesController = require('../../../controllers/relatedForReflectionsController')(OutcomeMock, ReflectionMock, momentMock);
     });
 
-    describe('/related/outcomes', function () {
+    describe('/related/reflections', function () {
         describe('get', function () {
-            it('should work for Daily', function () {
-                spyOn(responseMock, 'json').and.callThrough();
-                var results = [{test: 'test'}];
-                spyOn(OutcomeMock, 'find').and.callFake(function (query, callback) {
-                     callback(undefined, results);
-                });
-
-                requestMock.query.typeName = 'Daily';
-
-                relatedForOutcomesController.get(requestMock, responseMock);
-
-                expect(responseMock.json).toHaveBeenCalledWith(results);
-            });
-
             it('should work for Weekly', function () {
                 spyOn(responseMock, 'json').and.callThrough();
                 var resultsForReflections = [{tests: 'test1'}];
@@ -85,28 +71,12 @@ describe("Related For Outcomes Controller", function() {
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send').and.callThrough();
 
-                requestMock.query.typeName = 'Not Supported';
+                requestMock.query.typeName = 'Daily';
 
                 relatedForOutcomesController.get(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(400);
                 expect(responseMock.send).toHaveBeenCalled();
-            });
-
-            it('should send back 500 if Outcome search goes wrong with Daily', function () {
-                var error = 'This is an error';
-                spyOn(OutcomeMock, 'find').and.callFake(function (query, callback) {
-                    callback(error, undefined);
-                });
-                spyOn(responseMock, 'status').and.callThrough();
-                spyOn(responseMock, 'send').and.callThrough();
-
-                requestMock.query.typeName = 'Daily';
-
-                relatedForOutcomesController.get(requestMock, responseMock);
-
-                expect(responseMock.status).toHaveBeenCalledWith(500);
-                expect(responseMock.send).toHaveBeenCalledWith(error);
             });
 
             it('should send back 500 if Outcome search goes wrong with Weekly', function () {

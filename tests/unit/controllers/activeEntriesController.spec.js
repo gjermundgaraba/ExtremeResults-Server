@@ -36,7 +36,7 @@ describe("Active Entries Controller", function() {
             json: function () {}
         };
 
-        activeEntriesController = require('../../controllers/activeEntriesController')(OutcomeMock, momentMock);
+        activeEntriesController = require('../../../controllers/activeEntriesController')(OutcomeMock, momentMock);
     });
 
     describe('/activeEntries', function () {

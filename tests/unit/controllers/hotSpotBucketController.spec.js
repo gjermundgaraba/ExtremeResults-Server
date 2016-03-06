@@ -1,15 +1,15 @@
-describe("Outcome Controller", function() {
-    var outcomeController,
+describe("Hot Spot Bucket Controller", function() {
+    var hotSpotBucketController,
         responseMock,
         requestMock,
-        OutcomeMock;
+        HotSpotBucketMock;
 
     beforeEach(function() {
-        OutcomeMock = function () {};
-        OutcomeMock.prototype.save = function () {};
-        OutcomeMock.prototype.remove = function () {};
-        OutcomeMock.prototype.validateSync = function () {};
-        OutcomeMock.find = function () {};
+        HotSpotBucketMock = function () {};
+        HotSpotBucketMock.prototype.save = function () {};
+        HotSpotBucketMock.prototype.remove = function () {};
+        HotSpotBucketMock.prototype.validateSync = function () {};
+        HotSpotBucketMock.find = function () {};
 
         requestMock = {
             body: {}
@@ -23,39 +23,41 @@ describe("Outcome Controller", function() {
             json: function () {}
         };
 
-        outcomeController = require('../../controllers/outcomeController')(OutcomeMock);
+        hotSpotBucketController = require('../../../controllers/hotSpotBucketController')(HotSpotBucketMock);
     });
 
-    describe('/outcomes', function () {
+    describe('/hotSpotBuckets', function () {
         describe('get', function () {
-            it('should get all outcomes', function () {
-                var fakeOutcomes = [
+            it('should get all hot spot buckets', function () {
+                var fakeHotSpotBuckets = [
                     {
-                        firstStory: 'Test1'
+                        name: 'Test1',
+                        hotSpots: []
                     },
                     {
-                        firstStory: 'Test123'
+                        name: 'Test2',
+                        hotSpots: ['test']
                     }
                 ];
-                spyOn(OutcomeMock, 'find').and.callFake(function (callBack) {
-                    callBack(undefined, fakeOutcomes);
+                spyOn(HotSpotBucketMock, 'find').and.callFake(function (callBack) {
+                    callBack(undefined, fakeHotSpotBuckets);
                 });
                 spyOn(responseMock, 'json');
-                outcomeController.get(requestMock, responseMock);
+                hotSpotBucketController.get(requestMock, responseMock);
 
-                expect(OutcomeMock.find).toHaveBeenCalled();
-                expect(responseMock.json).toHaveBeenCalledWith(fakeOutcomes);
+                expect(HotSpotBucketMock.find).toHaveBeenCalled();
+                expect(responseMock.json).toHaveBeenCalledWith(fakeHotSpotBuckets);
             });
 
             it('should send back status code 500 on failure', function () {
                 var error = {};
-                spyOn(OutcomeMock, 'find').and.callFake(function (callBack) {
+                spyOn(HotSpotBucketMock, 'find').and.callFake(function (callBack) {
                     callBack(error, undefined);
                 });
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send').and.callThrough();
 
-                outcomeController.get(requestMock, responseMock);
+                hotSpotBucketController.get(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(500);
                 expect(responseMock.send).toHaveBeenCalledWith(error);
@@ -65,21 +67,21 @@ describe("Outcome Controller", function() {
         describe('post', function () {
 
             it('should do validation on body', function () {
-                spyOn(OutcomeMock.prototype, 'validateSync');
+                spyOn(HotSpotBucketMock.prototype, 'validateSync');
 
-                outcomeController.post(requestMock, responseMock);
+                hotSpotBucketController.post(requestMock, responseMock);
 
-                expect(OutcomeMock.prototype.validateSync).toHaveBeenCalled();
+                expect(HotSpotBucketMock.prototype.validateSync).toHaveBeenCalled();
             });
 
             it('should send 400 back with message if validation fails', function () {
                 var validationMessage = 'somesome';
                 var validationFailureObject = { toString: function () { return validationMessage} };
-                spyOn(OutcomeMock.prototype, 'validateSync').and.returnValue(validationFailureObject);
+                spyOn(HotSpotBucketMock.prototype, 'validateSync').and.returnValue(validationFailureObject);
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send');
 
-                outcomeController.post(requestMock, responseMock);
+                hotSpotBucketController.post(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(400);
                 expect(responseMock.send).toHaveBeenCalledWith(validationMessage);
@@ -89,11 +91,11 @@ describe("Outcome Controller", function() {
                 var errorMessage = 'SomeError';
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send').and.callThrough();
-                spyOn(OutcomeMock.prototype, 'save').and.callFake(function (callBack) {
-                     callBack(errorMessage);
+                spyOn(HotSpotBucketMock.prototype, 'save').and.callFake(function (callBack) {
+                    callBack(errorMessage);
                 });
 
-                outcomeController.post(requestMock, responseMock);
+                hotSpotBucketController.post(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(500);
                 expect(responseMock.send).toHaveBeenCalledWith(errorMessage);
@@ -102,11 +104,11 @@ describe("Outcome Controller", function() {
             it('should send back 201 on save success', function () {
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send').and.callThrough();
-                spyOn(OutcomeMock.prototype, 'save').and.callFake(function (callBack) {
+                spyOn(HotSpotBucketMock.prototype, 'save').and.callFake(function (callBack) {
                     callBack(undefined);
                 });
 
-                outcomeController.post(requestMock, responseMock);
+                hotSpotBucketController.post(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(201);
                 expect(responseMock.send).toHaveBeenCalled();
@@ -115,60 +117,41 @@ describe("Outcome Controller", function() {
         });
     });
 
-    describe('/outcomes/:outcomeId', function () {
+    describe('/hotSpotBuckets/:hotSpotBucketId', function () {
 
         beforeEach(function () {
-            requestMock.outcome = new OutcomeMock();
-            requestMock.outcome.typeName = 'TypeNameTest';
-            requestMock.outcome.firstStory = 'StoryTest1';
-            requestMock.outcome.secondStory = 'StoryTest2';
-            requestMock.outcome.thirdStory = 'StoryTest3';
-            requestMock.outcome.effectiveDate = new Date();
-        });
-
-        describe('get', function () {
-            it('should send the outcome back', function () {
-                spyOn(responseMock, 'json');
-
-                outcomeController.outcomeId.get(requestMock, responseMock);
-
-                expect(responseMock.json).toHaveBeenCalledWith(requestMock.outcome);
-            });
+            requestMock.hotSpotBucket = new HotSpotBucketMock();
+            requestMock.hotSpotBucket.name = 'Hot Spot Bucket Name';
+            requestMock.hotSpotBucket.hotSpots = ['Hot Spot 1', 'Hot Spot 2'];
         });
 
         describe('put', function () {
             it('should set all fields to the ones from the body', function () {
-                requestMock.body.typeName = 'bodyTypeName';
-                requestMock.body.firstStory = 'bodyFirstStory';
-                requestMock.body.secondStory = 'bodySecondStory';
-                requestMock.body.thirdStory = 'bodyThirdStory';
-                requestMock.body.effectiveDate = new Date();
+                requestMock.body.name = 'bodyTypeName';
+                requestMock.body.hotSPots = ['Hot Spot 1', 'Hot Spot 2', 'Hot Spot 3'];
 
-                outcomeController.outcomeId.put(requestMock, responseMock);
+                hotSpotBucketController.hotSpotBucketId.put(requestMock, responseMock);
 
-                expect(requestMock.outcome.typeName).toEqual(requestMock.body.typeName);
-                expect(requestMock.outcome.firstStory).toEqual(requestMock.body.firstStory);
-                expect(requestMock.outcome.secondStory).toEqual(requestMock.body.secondStory);
-                expect(requestMock.outcome.thirdStory).toEqual(requestMock.body.thirdStory);
-                expect(requestMock.outcome.effectiveDate).toEqual(requestMock.body.effectiveDate);
+                expect(requestMock.hotSpotBucket.name).toEqual(requestMock.body.name);
+                expect(requestMock.hotSpotBucket.hotSpots).toEqual(requestMock.body.hotSpots);
             });
 
-            it('should do validation on outcome', function () {
-                spyOn(OutcomeMock.prototype, 'validateSync');
+            it('should do validation on hot spot bucket', function () {
+                spyOn(HotSpotBucketMock.prototype, 'validateSync');
 
-                outcomeController.outcomeId.put(requestMock, responseMock);
+                hotSpotBucketController.hotSpotBucketId.put(requestMock, responseMock);
 
-                expect(OutcomeMock.prototype.validateSync).toHaveBeenCalled();
+                expect(HotSpotBucketMock.prototype.validateSync).toHaveBeenCalled();
             });
 
             it('should send 400 back with message if validation fails', function () {
                 var validationMessage = 'SomeValidationErrorMessage';
                 var validationFailureObject = { toString: function () { return validationMessage} };
-                spyOn(OutcomeMock.prototype, 'validateSync').and.returnValue(validationFailureObject);
+                spyOn(HotSpotBucketMock.prototype, 'validateSync').and.returnValue(validationFailureObject);
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send');
 
-                outcomeController.outcomeId.put(requestMock, responseMock);
+                hotSpotBucketController.hotSpotBucketId.put(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(400);
                 expect(responseMock.send).toHaveBeenCalledWith(validationMessage);
@@ -178,11 +161,11 @@ describe("Outcome Controller", function() {
                 var errorMessage = 'SomeError';
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send').and.callThrough();
-                spyOn(OutcomeMock.prototype, 'save').and.callFake(function (callBack) {
+                spyOn(HotSpotBucketMock.prototype, 'save').and.callFake(function (callBack) {
                     callBack(errorMessage);
                 });
 
-                outcomeController.outcomeId.put(requestMock, responseMock);
+                hotSpotBucketController.hotSpotBucketId.put(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(500);
                 expect(responseMock.send).toHaveBeenCalledWith(errorMessage);
@@ -190,13 +173,13 @@ describe("Outcome Controller", function() {
 
             it('should send back updated object on save success', function () {
                 spyOn(responseMock, 'json').and.callThrough();
-                spyOn(OutcomeMock.prototype, 'save').and.callFake(function (callBack) {
+                spyOn(HotSpotBucketMock.prototype, 'save').and.callFake(function (callBack) {
                     callBack(undefined);
                 });
 
-                outcomeController.outcomeId.put(requestMock, responseMock);
+                hotSpotBucketController.hotSpotBucketId.put(requestMock, responseMock);
 
-                expect(responseMock.json).toHaveBeenCalledWith(requestMock.outcome);
+                expect(responseMock.json).toHaveBeenCalledWith(requestMock.hotSpotBucket);
             });
 
         });
@@ -207,11 +190,11 @@ describe("Outcome Controller", function() {
                 var errorMessage = 'SomeError';
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send').and.callThrough();
-                spyOn(OutcomeMock.prototype, 'remove').and.callFake(function (callBack) {
+                spyOn(HotSpotBucketMock.prototype, 'remove').and.callFake(function (callBack) {
                     callBack(errorMessage);
                 });
 
-                outcomeController.outcomeId.delete(requestMock, responseMock);
+                hotSpotBucketController.hotSpotBucketId.delete(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(500);
                 expect(responseMock.send).toHaveBeenCalledWith(errorMessage);
@@ -220,11 +203,11 @@ describe("Outcome Controller", function() {
             it('should send back 204 on remove success', function () {
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send').and.callThrough();
-                spyOn(OutcomeMock.prototype, 'remove').and.callFake(function (callBack) {
+                spyOn(HotSpotBucketMock.prototype, 'remove').and.callFake(function (callBack) {
                     callBack(undefined);
                 });
 
-                outcomeController.outcomeId.delete(requestMock, responseMock);
+                hotSpotBucketController.hotSpotBucketId.delete(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(204);
                 expect(responseMock.send).toHaveBeenCalled();

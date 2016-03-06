@@ -23,7 +23,7 @@ describe("Reflection Controller", function() {
             json: function () {}
         };
 
-        reflectionController = require('../../controllers/reflectionController')(ReflectionMock);
+        reflectionController = require('../../../controllers/reflectionController')(ReflectionMock);
     });
 
     describe('/reflections', function () {
