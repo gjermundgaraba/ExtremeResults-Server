@@ -271,7 +271,13 @@ describe('Related ITs', function () {
 
         describe('/reflections', function () {
 
-            describe('weekly', function () {
+            it('should send back 400 if typeName is not allowed', function (done) {
+                agent.get('/api/related/reflections?typeName=NotAllowed')
+                    .send()
+                    .expect(400, done);
+            });
+
+            describe('Weekly', function () {
                 it('should get back the last weekly reflection', function (done) {
                     var lastWeek = moment().subtract(1, 'weeks');
                     var lastWeeksReflection = {
