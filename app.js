@@ -13,6 +13,9 @@ if (process.env.ENV === 'test') {
 }
 
 var User = require('./models/userModel');
+var Outcome = require('./models/outcomeModel');
+var Reflection = require('./models/reflectionModel');
+var HotSpotBucket = require('./models/hotSpotBucketModel');
 
 passport.use(new LocalStrategy(
     function(username, password, done) {
@@ -36,15 +39,9 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 
-app.post('/login', passport.authenticate('local', {session: false}), function (req, res) {
-    res.status(200).send();
-});
-
-var Outcome = require('./models/outcomeModel');
-var Reflection = require('./models/reflectionModel');
-var HotSpotBucket = require('./models/hotSpotBucketModel');
 
 var registerRouter = require('./routes/registerRoutes')(User);
+var loginRouter = require('./routes/loginRoutes')(User, passport);
 var outcomeRouter = require('./routes/outcomeRoutes')(Outcome);
 var reflectionRouter = require('./routes/reflectionRoutes')(Reflection);
 var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket);
@@ -52,6 +49,7 @@ var relatedRouter = require('./routes/relatedRoutes')(Outcome, Reflection);
 var activeEntriesRouter = require('./routes/activeEntriesRoutes')(Outcome);
 
 app.use('/api/register', registerRouter);
+app.use('/api/login', loginRouter);
 app.use('/api/outcomes', outcomeRouter);
 app.use('/api/reflections', reflectionRouter);
 app.use('/api/hotSpotBuckets', hotSpotBucketRouter);
