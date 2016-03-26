@@ -42,7 +42,11 @@ describe('Register ITs', function () {
             it('should allow user to login', function (done) {
                 agent.post('/api/login')
                     .send(itUser)
-                    .expect(200, done);
+                    .expect(200)
+                    .end(function (err, results) {
+                        results.body.should.have.property('token');
+                        done();
+                    });
             });
 
             it('should return 401 if password is wrong', function (done) {

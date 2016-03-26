@@ -40,8 +40,14 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 
+// TODO:
+// VERIFY TOKEN: https://github.com/jaredhanson/passport-http-bearer
+// ALSO SEE: http://stackoverflow.com/questions/17397052/nodejs-passport-authentication-token
+
+var tempSecret = 'to-be-changed'; // TODO: Make secret not hardcoded into the program
+
 var registerRouter = require('./routes/registerRoutes')(User);
-var loginRouter = require('./routes/loginRoutes')(User, passport);
+var loginRouter = require('./routes/loginRoutes')(User, passport, tempSecret);
 var outcomeRouter = require('./routes/outcomeRoutes')(Outcome);
 var reflectionRouter = require('./routes/reflectionRoutes')(Reflection);
 var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket);
