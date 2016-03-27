@@ -1,9 +1,11 @@
 var express = require('express');
 
-var routes = function (Outcome) {
+var routes = function (Outcome, passport) {
     var outcomeRouter = express.Router();
 
     var outcomeController = require('../controllers/outcomeController')(Outcome);
+
+    outcomeRouter.use(passport.authenticate('bearer', { session: false }));
 
     outcomeRouter.route('/')
         .get(outcomeController.get)

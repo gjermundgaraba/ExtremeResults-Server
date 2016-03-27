@@ -5,23 +5,47 @@ var should = require('should'),
     mongoose = require('mongoose'),
     Outcome,
     Reflection,
+    User,
+    token,
     agent;
 
 
 describe('Related ITs', function () {
 
-    beforeEach(function () {
+    beforeEach(function (done) {
         delete require.cache[require.resolve('../../app.js')];
         server = require('../../app.js');
         agent = request.agent(server);
         Outcome = mongoose.model('Outcome');
         Reflection = mongoose.model('Reflection');
+
+        User = mongoose.model('User');
+        var itUser = {
+            username: 'test',
+            password: 'password'
+        };
+
+        var user = new User();
+        user.local.username = itUser.username;
+        user.local.password = itUser.password;
+
+        user.save();
+
+        agent.post('/api/login')
+            .send(itUser)
+            .end(function (err, results) {
+                token = results.body.token;
+                done();
+            });
     });
 
     afterEach(function (done) {
         Outcome.remove().exec()
             .then(function () {
                 return Reflection.remove().exec();
+            })
+            .then(function () {
+                return User.remove().exec();
             })
             .then(function () {
                 server.close(done);
@@ -49,6 +73,7 @@ describe('Related ITs', function () {
                     };
 
                     agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
                         .end(function (err, postOutcomeResults) {
                             agent.get('/api/related/outcomes?typeName=Daily')
@@ -73,6 +98,7 @@ describe('Related ITs', function () {
                     };
 
                     agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
                         .end(function () {
                             agent.get('/api/related/outcomes?typeName=Daily')
@@ -96,6 +122,7 @@ describe('Related ITs', function () {
                     };
 
                     agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
                         .send(yesterdaysOutcome)
                         .end(function (err, postOutcomeResults) {
                             agent.get('/api/related/outcomes?typeName=Daily')
@@ -128,9 +155,11 @@ describe('Related ITs', function () {
                     };
 
                     agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
                         .end(function (err, postWeeklyOutcomeResults) {
                             agent.post('/api/outcomes')
+                                .set('Authorization', 'bearer ' + token)
                                 .send(yesterdaysOutcome)
                                 .end(function (err, yesterdaysOutcomeResults) {
                                     agent.get('/api/related/outcomes?typeName=Daily')
@@ -214,6 +243,7 @@ describe('Related ITs', function () {
                     };
 
                     agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
                         .end(function (err, lastWeeksOutcomeResults) {
                             agent.get('/api/related/outcomes?typeName=Weekly')
@@ -249,6 +279,7 @@ describe('Related ITs', function () {
                     };
 
                     agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
                         .end(function (err, lastWeeksOutcomeResults) {
                             agent.post('/api/reflections')
@@ -342,6 +373,7 @@ describe('Related ITs', function () {
                     };
 
                     agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
                         .send(thisWeeksOutcome)
                         .end(function (err, thisWeeksOutcomeResults) {
                             agent.get('/api/related/reflections?typeName=Weekly')
@@ -377,6 +409,7 @@ describe('Related ITs', function () {
                     };
 
                     agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
                         .send(thisWeeksOutcome)
                         .end(function (err, thisWeeksOutcomeResults) {
                             agent.post('/api/reflections')

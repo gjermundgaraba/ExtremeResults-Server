@@ -4,20 +4,44 @@ var should = require('should'),
     server,
     mongoose = require('mongoose'),
     Outcome,
+    User,
+    token,
     agent;
 
 
 describe('Outcome ITs', function () {
 
-    beforeEach(function () {
+    beforeEach(function (done) {
         delete require.cache[require.resolve('../../app.js')];
         server = require('../../app.js');
         agent = request.agent(server);
         Outcome = mongoose.model('Outcome');
+
+        User = mongoose.model('User');
+        var itUser = {
+            username: 'test',
+            password: 'password'
+        };
+
+        var user = new User();
+        user.local.username = itUser.username;
+        user.local.password = itUser.password;
+
+        user.save();
+
+        agent.post('/api/login')
+            .send(itUser)
+            .end(function (err, results) {
+                token = results.body.token;
+                done();
+            });
     });
 
     afterEach(function (done) {
         Outcome.remove().exec()
+            .then(function () {
+                return User.remove().exec();
+            })
             .then(function () {
                 server.close(done);
             });
@@ -44,12 +68,15 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .end(function (err, dailyResults) {
                         agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
                             .send(activeWeeklyOutcome)
                             .end(function (err, weeklyResults) {
                                 agent.get('/api/activeEntries')
+                                    .set('Authorization', 'bearer ' + token)
                                     .send()
                                     .expect(200)
                                     .end(function (err, results) {
@@ -81,12 +108,15 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .end(function (err, dailyResults) {
                         agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
                             .send(activeWeeklyOutcome)
                             .end(function () {
                                 agent.get('/api/activeEntries')
+                                    .set('Authorization', 'bearer ' + token)
                                     .send()
                                     .expect(200)
                                     .end(function (err, results) {
@@ -117,12 +147,15 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .end(function () {
                         agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
                             .send(activeWeeklyOutcome)
                             .end(function (err, weeklyResults) {
                                 agent.get('/api/activeEntries')
+                                    .set('Authorization', 'bearer ' + token)
                                     .send()
                                     .expect(200)
                                     .end(function (err, results) {
@@ -154,12 +187,15 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .end(function () {
                         agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
                             .send(activeWeeklyOutcome)
                             .end(function () {
                                 agent.get('/api/activeEntries')
+                                    .set('Authorization', 'bearer ' + token)
                                     .send()
                                     .expect(200)
                                     .end(function (err, results) {
@@ -168,6 +204,12 @@ describe('Outcome ITs', function () {
                                     });
                             });
                     });
+            });
+
+            it('should return 401 if no token is sent in', function (done) {
+                agent.get('/api/activeEntries')
+                    .send()
+                    .expect(401, done);
             });
         });
     });

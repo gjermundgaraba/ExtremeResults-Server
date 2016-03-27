@@ -1,8 +1,10 @@
 var express = require('express'),
     mongoose = require('mongoose'),
     bodyParser = require('body-parser'),
+    jwt = require('jwt-simple'),
     passport = require('passport'),
-    LocalStrategy = require('passport-local').Strategy;
+    LocalStrategy = require('passport-local').Strategy,
+    BearerStrategy = require('passport-http-bearer').Strategy;
 
 var db;
 
@@ -16,6 +18,8 @@ var User = require('./models/userModel');
 var Outcome = require('./models/outcomeModel');
 var Reflection = require('./models/reflectionModel');
 var HotSpotBucket = require('./models/hotSpotBucketModel');
+
+var tempSecret = 'to-be-changed'; // TODO: Make secret not hardcoded into the program
 
 passport.use(new LocalStrategy(
     function(username, password, done) {
@@ -32,6 +36,17 @@ passport.use(new LocalStrategy(
     }
 ));
 
+passport.use(new BearerStrategy(
+    function(token, done) {
+        var decoded = jwt.decode(token, tempSecret);
+        User.findOne({'local.username': decoded.username}, function(err, user) {
+            if (err) { return done(err); }
+            if (!user) { return done(null, false); }
+            return done(null, user, { scope: 'all' });
+        });
+    }
+));
+
 var app = express();
 var port = process.env.PORT || 3000;
 
@@ -39,20 +54,13 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 
-
-// TODO:
-// VERIFY TOKEN: https://github.com/jaredhanson/passport-http-bearer
-// ALSO SEE: http://stackoverflow.com/questions/17397052/nodejs-passport-authentication-token
-
-var tempSecret = 'to-be-changed'; // TODO: Make secret not hardcoded into the program
-
 var registerRouter = require('./routes/registerRoutes')(User);
 var loginRouter = require('./routes/loginRoutes')(User, passport, tempSecret);
-var outcomeRouter = require('./routes/outcomeRoutes')(Outcome);
+var outcomeRouter = require('./routes/outcomeRoutes')(Outcome, passport);
 var reflectionRouter = require('./routes/reflectionRoutes')(Reflection);
 var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket);
 var relatedRouter = require('./routes/relatedRoutes')(Outcome, Reflection);
-var activeEntriesRouter = require('./routes/activeEntriesRoutes')(Outcome);
+var activeEntriesRouter = require('./routes/activeEntriesRoutes')(Outcome, passport);
 
 app.use('/api/register', registerRouter);
 app.use('/api/login', loginRouter);

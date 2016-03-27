@@ -3,20 +3,45 @@ var should = require('should'),
     server,
     mongoose = require('mongoose'),
     Outcome,
+    User,
+    token,
     agent;
 
 
 describe('Outcome ITs', function () {
 
-    beforeEach(function () {
+
+    beforeEach(function (done) {
         delete require.cache[require.resolve('../../app.js')];
         server = require('../../app.js');
         agent = request.agent(server);
         Outcome = mongoose.model('Outcome');
+
+        User = mongoose.model('User');
+        var itUser = {
+            username: 'test',
+            password: 'password'
+        };
+
+        var user = new User();
+        user.local.username = itUser.username;
+        user.local.password = itUser.password;
+
+        user.save();
+
+        agent.post('/api/login')
+            .send(itUser)
+            .end(function (err, results) {
+                token = results.body.token;
+                done();
+            });
     });
 
     afterEach(function (done) {
         Outcome.remove().exec()
+            .then(function () {
+                return User.remove().exec();
+            })
             .then(function () {
                 server.close(done);
             });
@@ -35,6 +60,7 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(201)
                     .end(function (err, results) {
@@ -57,6 +83,7 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -70,6 +97,7 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -83,6 +111,7 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -96,6 +125,7 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -109,6 +139,7 @@ describe('Outcome ITs', function () {
                 };
 
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -147,12 +178,15 @@ describe('Outcome ITs', function () {
                 // Callback hell commencing!
                 // TODO: Consider supertest-as-promised
                 agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome1)
                     .end(function () {
                         agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
                             .send(outcome2)
                             .end(function () {
                                 agent.post('/api/outcomes')
+                                    .set('Authorization', 'bearer ' + token)
                                     .send(outcome3)
                                     .end(done);
                             });
@@ -161,6 +195,7 @@ describe('Outcome ITs', function () {
 
             it('should get all outcomes', function (done) {
                 agent.get('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
                     .expect(200)
                     .end(function (err, results) {
                         results.body.length.should.be.exactly(3);
@@ -205,6 +240,7 @@ describe('Outcome ITs', function () {
             };
 
             agent.post('/api/outcomes')
+                .set('Authorization', 'bearer ' + token)
                 .send(outcome)
                 .end(function (err, results) {
                     originalOutcome = results.body;
@@ -216,6 +252,7 @@ describe('Outcome ITs', function () {
 
             it('should get the outcome back', function (done) {
                 agent.get('/api/outcomes/' + originalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
                     .expect(200)
                     .end(function (err, results) {
                         results.body.should.have.property('_id', originalOutcome._id);
@@ -230,6 +267,7 @@ describe('Outcome ITs', function () {
 
             it('should return 404 if id dont exist', function (done) {
                 agent.get('/api/outcomes/56c9d89796ae562c201713c5')
+                    .set('Authorization', 'bearer ' + token)
                     .expect(404, done);
             });
 
@@ -249,6 +287,7 @@ describe('Outcome ITs', function () {
                 outcome.thirdStory = newThirdStory;
 
                 agent.put('/api/outcomes/' + originalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(200)
                     .end(function (err, results) {
@@ -263,6 +302,7 @@ describe('Outcome ITs', function () {
 
             it('should return 404 if id dont exist', function (done) {
                 agent.put('/api/outcomes/56c9d89796ae562c201713c5')
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(404, done);
             });
@@ -271,6 +311,7 @@ describe('Outcome ITs', function () {
                 delete outcome.typeName;
 
                 agent.put('/api/outcomes/' + originalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -279,6 +320,7 @@ describe('Outcome ITs', function () {
                 delete outcome.firstStory;
 
                 agent.put('/api/outcomes/' + originalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -287,6 +329,7 @@ describe('Outcome ITs', function () {
                 delete outcome.secondStory;
 
                 agent.put('/api/outcomes/' + originalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -295,6 +338,7 @@ describe('Outcome ITs', function () {
                 delete outcome.thirdStory;
 
                 agent.put('/api/outcomes/' + originalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -303,6 +347,7 @@ describe('Outcome ITs', function () {
                 delete outcome.effectiveDate;
 
                 agent.put('/api/outcomes/' + originalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(400, done);
             });
@@ -313,11 +358,13 @@ describe('Outcome ITs', function () {
 
             it('should be able to delete', function (done) {
                 agent.delete('/api/outcomes/' + originalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
                     .expect(204, done);
             });
 
             it('should return 404 if id dont exist', function (done) {
                 agent.delete('/api/outcomes/56c9d89796ae562c201713c5')
+                    .set('Authorization', 'bearer ' + token)
                     .expect(404, done);
             });
 
