@@ -143,6 +143,20 @@ describe('Outcome ITs', function () {
                     .send(outcome)
                     .expect(400, done);
             });
+
+            it('should return 401 if no token is sent in', function (done) {
+                var outcome = {
+                    typeName: 'Daily',
+                    firstStory: 'The First Story',
+                    secondStory: 'The Second Story',
+                    thirdStory: 'The Third Story',
+                    effectiveDate: new Date()
+                };
+
+                agent.post('/api/outcomes')
+                    .send(outcome)
+                    .expect(401, done);
+            });
         });
 
         describe('get', function () {
@@ -223,6 +237,11 @@ describe('Outcome ITs', function () {
                         done();
                     });
             });
+
+            it('should return 401 if no token is sent in', function (done) {
+                agent.get('/api/outcomes')
+                    .expect(401, done);
+            });
         });
     });
 
@@ -269,6 +288,11 @@ describe('Outcome ITs', function () {
                 agent.get('/api/outcomes/56c9d89796ae562c201713c5')
                     .set('Authorization', 'bearer ' + token)
                     .expect(404, done);
+            });
+
+            it('should return 401 if no token is sent in', function (done) {
+                agent.get('/api/outcomes/' + originalOutcome._id)
+                    .expect(401, done);
             });
 
         });
@@ -352,6 +376,22 @@ describe('Outcome ITs', function () {
                     .expect(400, done);
             });
 
+            it('should return 401 if no token is sent in', function (done) {
+                var newTypeName = 'Monthly';
+                var newFirstStory = 'The First Monthly Story';
+                var newSecondStory = 'The Second Monthly Story';
+                var newThirdStory = 'The Third Monthly Story';
+
+                outcome.typeName = newTypeName;
+                outcome.firstStory = newFirstStory;
+                outcome.secondStory = newSecondStory;
+                outcome.thirdStory = newThirdStory;
+
+                agent.put('/api/outcomes/' + originalOutcome._id)
+                    .send(outcome)
+                    .expect(401, done);
+            });
+
         });
 
         describe('delete', function () {
@@ -366,6 +406,11 @@ describe('Outcome ITs', function () {
                 agent.delete('/api/outcomes/56c9d89796ae562c201713c5')
                     .set('Authorization', 'bearer ' + token)
                     .expect(404, done);
+            });
+
+            it('should return 401 if no token is sent in', function (done) {
+                agent.delete('/api/outcomes/' + originalOutcome._id)
+                    .expect(401, done);
             });
 
         });

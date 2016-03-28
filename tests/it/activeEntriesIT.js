@@ -208,7 +208,6 @@ describe('Outcome ITs', function () {
 
             it('should return 401 if no token is sent in', function (done) {
                 agent.get('/api/activeEntries')
-                    .send()
                     .expect(401, done);
             });
         });

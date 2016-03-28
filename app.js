@@ -57,9 +57,9 @@ app.use(passport.initialize());
 var registerRouter = require('./routes/registerRoutes')(User);
 var loginRouter = require('./routes/loginRoutes')(User, passport, tempSecret);
 var outcomeRouter = require('./routes/outcomeRoutes')(Outcome, passport);
-var reflectionRouter = require('./routes/reflectionRoutes')(Reflection);
-var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket);
-var relatedRouter = require('./routes/relatedRoutes')(Outcome, Reflection);
+var reflectionRouter = require('./routes/reflectionRoutes')(Reflection, passport);
+var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket, passport);
+var relatedRouter = require('./routes/relatedRoutes')(Outcome, Reflection, passport);
 var activeEntriesRouter = require('./routes/activeEntriesRoutes')(Outcome, passport);
 
 app.use('/api/register', registerRouter);

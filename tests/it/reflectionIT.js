@@ -3,20 +3,44 @@ var should = require('should'),
     server,
     mongoose = require('mongoose'),
     Reflection,
+    User,
+    token,
     agent;
 
 
 describe('Reflection ITs', function () {
 
-    beforeEach(function () {
+    beforeEach(function (done) {
         delete require.cache[require.resolve('../../app.js')];
         server = require('../../app.js');
         agent = request.agent(server);
         Reflection = mongoose.model('Reflection');
+
+        User = mongoose.model('User');
+        var itUser = {
+            username: 'test',
+            password: 'password'
+        };
+
+        var user = new User();
+        user.local.username = itUser.username;
+        user.local.password = itUser.password;
+
+        user.save();
+
+        agent.post('/api/login')
+            .send(itUser)
+            .end(function (err, results) {
+                token = results.body.token;
+                done();
+            });
     });
 
     afterEach(function (done) {
         Reflection.remove().exec()
+            .then(function () {
+                return User.remove().exec();
+            })
             .then(function () {
                 server.close(done);
             });
@@ -39,6 +63,7 @@ describe('Reflection ITs', function () {
                 };
 
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(201)
                     .end(function (err, results) {
@@ -67,6 +92,7 @@ describe('Reflection ITs', function () {
                 };
 
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -83,6 +109,7 @@ describe('Reflection ITs', function () {
                 };
 
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -99,9 +126,11 @@ describe('Reflection ITs', function () {
                 };
 
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
+
             it('should not allow a reflection without thirdThingThatWentWell', function (done) {
                 var reflection = {
                     typeName: 'Daily',
@@ -114,9 +143,11 @@ describe('Reflection ITs', function () {
                 };
 
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
+
             it('should not allow a reflection without firstThingToImprove', function (done) {
                 var reflection = {
                     typeName: 'Daily',
@@ -129,9 +160,11 @@ describe('Reflection ITs', function () {
                 };
 
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
+
             it('should not allow a reflection without secondThingToImprove', function (done) {
                 var reflection = {
                     typeName: 'Daily',
@@ -144,9 +177,11 @@ describe('Reflection ITs', function () {
                 };
 
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
+
             it('should not allow a reflection without thirdThingToImprove', function (done) {
                 var reflection = {
                     typeName: 'Daily',
@@ -159,6 +194,7 @@ describe('Reflection ITs', function () {
                 };
 
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -175,8 +211,26 @@ describe('Reflection ITs', function () {
                 };
 
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
+            });
+
+            it('should return 401 if no token is sent in', function (done) {
+                var reflection = {
+                    typeName: 'Daily',
+                    firstThingThatWentWell: 'The First Thing That Went Well',
+                    secondThingThatWentWell: 'The Second Thing That Went Well',
+                    thirdThingThatWentWell: 'The Third Thing That Went Well',
+                    firstThingToImprove: 'The First Thing To Improve',
+                    secondThingToImprove: 'The Second Thing To Improve',
+                    thirdThingToImprove: 'The Third Thing To Improve',
+                    effectiveDate: new Date()
+                };
+
+                agent.post('/api/reflections')
+                    .send(reflection)
+                    .expect(401, done);
             });
         });
 
@@ -222,12 +276,15 @@ describe('Reflection ITs', function () {
                 // Callback hell commencing!
                 // TODO: Consider supertest-as-promised
                 agent.post('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection1)
                     .end(function () {
                         agent.post('/api/reflections')
+                            .set('Authorization', 'bearer ' + token)
                             .send(reflection2)
                             .end(function () {
                                 agent.post('/api/reflections')
+                                    .set('Authorization', 'bearer ' + token)
                                     .send(reflection3)
                                     .end(done);
                             });
@@ -236,6 +293,7 @@ describe('Reflection ITs', function () {
 
             it('should get all reflections', function (done) {
                 agent.get('/api/reflections')
+                    .set('Authorization', 'bearer ' + token)
                     .expect(200)
                     .end(function (err, results) {
                         results.body.length.should.be.exactly(3);
@@ -272,6 +330,11 @@ describe('Reflection ITs', function () {
                         done();
                     });
             });
+
+            it('should return 401 if no token is sent in', function (done) {
+                agent.get('/api/reflections')
+                    .expect(401, done);
+            });
         });
     });
 
@@ -292,6 +355,7 @@ describe('Reflection ITs', function () {
             };
 
             agent.post('/api/reflections')
+                .set('Authorization', 'bearer ' + token)
                 .send(reflection)
                 .end(function (err, results) {
                     originalReflection = results.body;
@@ -303,6 +367,7 @@ describe('Reflection ITs', function () {
 
             it('should get the reflection back', function (done) {
                 agent.get('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .expect(200)
                     .end(function (err, results) {
                         results.body.should.have.property('_id', originalReflection._id);
@@ -320,7 +385,13 @@ describe('Reflection ITs', function () {
 
             it('should return 404 if id dont exist', function (done) {
                 agent.get('/api/reflections/56c9d89796ae562c201713c5')
+                    .set('Authorization', 'bearer ' + token)
                     .expect(404, done);
+            });
+
+            it('should return 401 if no token is sent in', function (done) {
+                agent.get('/api/reflections/' + originalReflection._id)
+                    .expect(401, done);
             });
 
         });
@@ -345,6 +416,7 @@ describe('Reflection ITs', function () {
                 reflection.thirdThingToImprove = newThirdThingToImprove;
 
                 agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(200)
                     .end(function (err, results) {
@@ -362,6 +434,7 @@ describe('Reflection ITs', function () {
 
             it('should return 404 if id dont exist', function (done) {
                 agent.put('/api/reflections/56c9d89796ae562c201713c5')
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(404, done);
             });
@@ -370,6 +443,7 @@ describe('Reflection ITs', function () {
                 delete reflection.typeName;
 
                 agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -378,6 +452,7 @@ describe('Reflection ITs', function () {
                 delete reflection.firstThingThatWentWell;
 
                 agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -386,6 +461,7 @@ describe('Reflection ITs', function () {
                 delete reflection.secondThingThatWentWell;
 
                 agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -394,6 +470,7 @@ describe('Reflection ITs', function () {
                 delete reflection.thirdThingThatWentWell;
 
                 agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -402,6 +479,7 @@ describe('Reflection ITs', function () {
                 delete reflection.firstThingToImprove;
 
                 agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -410,6 +488,7 @@ describe('Reflection ITs', function () {
                 delete reflection.secondThingToImprove;
 
                 agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -418,6 +497,7 @@ describe('Reflection ITs', function () {
                 delete reflection.thirdThingToImprove;
 
                 agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
             });
@@ -426,8 +506,15 @@ describe('Reflection ITs', function () {
                 delete reflection.effectiveDate;
 
                 agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(400, done);
+            });
+
+            it('should return 401 if no token is sent in', function (done) {
+                agent.put('/api/reflections/56c9d89796ae562c201713c5')
+                    .send(reflection)
+                    .expect(401, done);
             });
 
         });
@@ -436,12 +523,19 @@ describe('Reflection ITs', function () {
 
             it('should be able to delete', function (done) {
                 agent.delete('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + token)
                     .expect(204, done);
             });
 
             it('should return 404 if id dont exist', function (done) {
                 agent.delete('/api/reflections/56c9d89796ae562c201713c5')
+                    .set('Authorization', 'bearer ' + token)
                     .expect(404, done);
+            });
+
+            it('should return 401 if no token is sent in', function (done) {
+                agent.delete('/api/reflections/' + originalReflection._id)
+                    .expect(401, done);
             });
 
         });

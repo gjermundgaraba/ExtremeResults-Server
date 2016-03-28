@@ -1,9 +1,11 @@
 var express = require('express');
 
-var routes = function (Reflection) {
+var routes = function (Reflection, passport) {
     var reflectionRouter = express.Router();
 
     var reflectionController = require('../controllers/reflectionController')(Reflection);
+
+    reflectionRouter.use(passport.authenticate('bearer', { session: false }));
 
     reflectionRouter.route('/')
         .get(reflectionController.get)

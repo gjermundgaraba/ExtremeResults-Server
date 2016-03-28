@@ -1,9 +1,11 @@
 var express = require('express');
 
-var routes = function (HotSpotBucket) {
+var routes = function (HotSpotBucket, passport) {
     var hotSpotBucketRouter = express.Router();
 
     var hotspotBucketController = require('../controllers/hotSpotBucketController')(HotSpotBucket);
+
+    hotSpotBucketRouter.use(passport.authenticate('bearer', { session: false }));
 
     hotSpotBucketRouter.route('/')
         .get(hotspotBucketController.get)
