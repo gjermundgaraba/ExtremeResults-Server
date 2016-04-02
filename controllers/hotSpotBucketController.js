@@ -1,7 +1,11 @@
 var hotSpotBucketsController = function (HotSpotBucket) {
 
     var post = function (req, res) {
-        var hotSpotBucket = new HotSpotBucket(req.body);
+        var hotSpotBucket = new HotSpotBucket();
+
+        hotSpotBucket.name = req.body.name;
+        hotSpotBucket.hotSpots = req.body.hotSpots;
+        hotSpotBucket.user = req.user._id;
 
         var validation = hotSpotBucket.validateSync();
         if (validation) {

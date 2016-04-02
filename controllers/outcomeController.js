@@ -1,7 +1,14 @@
 var outcomeController = function (Outcome) {
 
     var post = function (req, res) {
-        var outcome = new Outcome(req.body);
+        var outcome = new Outcome();
+
+        outcome.typeName = req.body.typeName;
+        outcome.firstStory = req.body.firstStory;
+        outcome.secondStory = req.body.secondStory;
+        outcome.thirdStory = req.body.thirdStory;
+        outcome.effectiveDate = req.body.effectiveDate;
+        outcome.user = req.user._id;
 
         var validation = outcome.validateSync();
         if (validation) {

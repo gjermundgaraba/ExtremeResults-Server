@@ -12,6 +12,7 @@ describe("Reflection Controller", function() {
         ReflectionMock.find = function () {};
 
         requestMock = {
+            user: {},
             body: {}
         };
 

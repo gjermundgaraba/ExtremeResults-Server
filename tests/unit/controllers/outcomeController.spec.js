@@ -12,6 +12,7 @@ describe("Outcome Controller", function() {
         OutcomeMock.find = function () {};
 
         requestMock = {
+            user: {},
             body: {}
         };
 

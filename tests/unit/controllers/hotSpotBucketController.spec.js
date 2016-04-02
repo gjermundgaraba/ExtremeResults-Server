@@ -12,6 +12,7 @@ describe("Hot Spot Bucket Controller", function() {
         HotSpotBucketMock.find = function () {};
 
         requestMock = {
+            user: {},
             body: {}
         };
 

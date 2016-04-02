@@ -1,7 +1,17 @@
 var reflectionController = function (Reflection) {
 
     var post = function (req, res) {
-        var reflection = new Reflection(req.body);
+        var reflection = new Reflection();
+
+        reflection.typeName = req.body.typeName;
+        reflection.firstThingThatWentWell = req.body.firstThingThatWentWell;
+        reflection.secondThingThatWentWell = req.body.secondThingThatWentWell;
+        reflection.thirdThingThatWentWell = req.body.thirdThingThatWentWell;
+        reflection.firstThingToImprove = req.body.firstThingToImprove;
+        reflection.secondThingToImprove = req.body.secondThingToImprove;
+        reflection.thirdThingToImprove = req.body.thirdThingToImprove;
+        reflection.effectiveDate = req.body.effectiveDate;
+        reflection.user = req.user._id;
 
         var validation = reflection.validateSync();
         if (validation) {
