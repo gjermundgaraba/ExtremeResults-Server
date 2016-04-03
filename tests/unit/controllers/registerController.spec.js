@@ -1,5 +1,6 @@
 describe("Register Controller", function() {
     var registerController,
+        jwtMock,
         responseMock,
         requestMock,
         UserMock;
@@ -11,6 +12,10 @@ describe("Register Controller", function() {
         UserMock.prototype.remove = function () {};
         UserMock.prototype.validateSync = function () {};
         UserMock.find = function () {};
+
+        jwtMock = {
+            encode: function () {}
+        };
 
         requestMock = {
             body: {}
@@ -24,7 +29,7 @@ describe("Register Controller", function() {
             json: function () {}
         };
 
-        registerController = require('../../../controllers/registerController')(UserMock);
+        registerController = require('../../../controllers/registerController')(UserMock, jwtMock);
     });
 
     describe('/register', function () {
@@ -47,18 +52,20 @@ describe("Register Controller", function() {
             });
 
             it('should send back 201 on save success', function () {
+                var fakeToken = '1234';
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send').and.callThrough();
                 spyOn(UserMock.prototype, 'save').and.callFake(function (callBack) {
                     callBack(undefined);
                 });
+                spyOn(jwtMock, 'encode').and.returnValue(fakeToken);
 
                 requestMock.body.username = 'test';
                 requestMock.body.password = 'test';
                 registerController.post(requestMock, responseMock);
 
                 expect(responseMock.status).toHaveBeenCalledWith(201);
-                expect(responseMock.send).toHaveBeenCalled();
+                expect(responseMock.send).toHaveBeenCalledWith({ token: fakeToken });
             });
 
         });

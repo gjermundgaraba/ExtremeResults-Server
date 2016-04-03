@@ -1,4 +1,4 @@
-var registerController = function (User) {
+var registerController = function (User, jwt, secret) {
 
     var post = function (req, res) {
         var user = new User();
@@ -9,7 +9,13 @@ var registerController = function (User) {
             if (error) {
                 res.status(500).send(error);
             } else {
-                res.status(201).send();
+                var payload = {
+                    username: user.local.username
+                };
+
+                var token = jwt.encode(payload, secret);
+
+                res.status(201).send({ token: token });
             }
         });
     };

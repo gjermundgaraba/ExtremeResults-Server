@@ -54,7 +54,7 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 
-var registerRouter = require('./routes/registerRoutes')(User);
+var registerRouter = require('./routes/registerRoutes')(User, tempSecret);
 var loginRouter = require('./routes/loginRoutes')(User, passport, tempSecret);
 var outcomeRouter = require('./routes/outcomeRoutes')(Outcome, passport);
 var reflectionRouter = require('./routes/reflectionRoutes')(Reflection, passport);

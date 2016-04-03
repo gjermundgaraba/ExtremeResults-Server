@@ -33,7 +33,12 @@ describe('Register ITs', function () {
 
                 agent.post('/api/register')
                     .send(user)
-                    .expect(201, done);
+                    .expect(201)
+                    .end(function (err, results) {
+                        results.body.should.have.property('token');
+
+                        done();
+                    });
             });
         });
 
