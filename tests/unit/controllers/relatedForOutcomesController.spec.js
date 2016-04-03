@@ -32,6 +32,7 @@ describe("Related For Outcomes Controller", function() {
         };
 
         requestMock = {
+            user: {},
             query: {}
         };
 

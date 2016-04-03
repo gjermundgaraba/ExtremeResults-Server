@@ -32,6 +32,7 @@ describe("Related For Reflections Controller", function() {
         };
 
         requestMock = {
+            user: {},
             query: {}
         };
 
