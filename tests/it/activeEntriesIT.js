@@ -6,6 +6,7 @@ var should = require('should'),
     Outcome,
     User,
     token,
+    otherUserToken,
     agent;
 
 
@@ -23,17 +24,32 @@ describe('Outcome ITs', function () {
             password: 'password'
         };
 
+        var otherItUser = {
+            username: 'test2',
+            password: 'password'
+        };
+
         var user = new User();
         user.local.username = itUser.username;
         user.local.password = itUser.password;
-
         user.save();
+
+        var otherUser = new User();
+        otherUser.local.username = otherItUser.username;
+        otherUser.local.password = otherItUser.password;
+        otherUser.save();
 
         agent.post('/api/login')
             .send(itUser)
             .end(function (err, results) {
                 token = results.body.token;
-                done();
+
+                agent.post('/api/login')
+                    .send(otherItUser)
+                    .end(function (err, results) {
+                        otherUserToken = results.body.token;
+                        done();
+                    });
             });
     });
 
@@ -83,6 +99,44 @@ describe('Outcome ITs', function () {
                                         results.body.length.should.be.exactly(2);
                                         results.body[0]._id.should.be.equal(dailyResults.body._id);
                                         results.body[1]._id.should.be.equal(weeklyResults.body._id);
+                                        done();
+                                    });
+                            });
+                    });
+            });
+
+            it('should return only entries for the user', function (done) {
+                var activeDailyOutcome = {
+                    typeName: 'Daily',
+                    firstStory: 'The First Story',
+                    secondStory: 'The Second Story',
+                    thirdStory: 'The Third Story',
+                    effectiveDate: new Date()
+                };
+
+                var otherUsersActiveDailyOutcome = {
+                    typeName: 'Weekly',
+                    firstStory: 'The First Story',
+                    secondStory: 'The Second Story',
+                    thirdStory: 'The Third Story',
+                    effectiveDate: new Date()
+                };
+
+                agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
+                    .send(activeDailyOutcome)
+                    .end(function (err, dailyResults) {
+                        agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + otherUserToken)
+                            .send(otherUsersActiveDailyOutcome)
+                            .end(function () {
+                                agent.get('/api/activeEntries')
+                                    .set('Authorization', 'bearer ' + token)
+                                    .send()
+                                    .expect(200)
+                                    .end(function (err, results) {
+                                        results.body.length.should.be.exactly(1);
+                                        results.body[0]._id.should.be.equal(dailyResults.body._id);
                                         done();
                                     });
                             });

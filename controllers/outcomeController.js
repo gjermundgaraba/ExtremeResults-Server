@@ -25,7 +25,11 @@ var outcomeController = function (Outcome) {
     };
 
     var get = function (req, res) {
-        Outcome.find(function (error, outcomes) {
+        var query = {
+            user: req.user._id
+        };
+
+        Outcome.find(query, function (error, outcomes) {
             if (error) {
                 res.status(500).send(error);
             } else {

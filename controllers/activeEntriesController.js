@@ -9,6 +9,7 @@ var activeEntriesController = function (Outcome, moment) {
         var query = {
             $or: [
                 {
+                    user: req.user._id,
                     typeName: 'Daily',
                     effectiveDate: {
                         $gte: startOfToday.toDate(),
@@ -16,6 +17,7 @@ var activeEntriesController = function (Outcome, moment) {
                     }
                 },
                 {
+                    user: req.user._id,
                     typeName: 'Weekly',
                     effectiveDate: {
                         $gte: startOfWeek.toDate(),

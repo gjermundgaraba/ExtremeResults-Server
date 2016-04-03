@@ -16,8 +16,12 @@ var routes = function (Outcome, passport) {
             if (err) {
                 res.status(500).send(err);
             } else if (outcome) {
-                req.outcome = outcome;
-                next();
+                if (!outcome.user.equals(req.user._id)) {
+                    res.status(403).send('You don\'t have access to this outcome');
+                } else {
+                    req.outcome = outcome;
+                    next();
+                }
             } else {
                 res.status(404).send('No outcome with that id found');
             }

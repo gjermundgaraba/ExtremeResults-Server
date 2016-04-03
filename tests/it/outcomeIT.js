@@ -5,6 +5,7 @@ var should = require('should'),
     Outcome,
     User,
     token,
+    otherUserToken,
     agent;
 
 
@@ -23,17 +24,32 @@ describe('Outcome ITs', function () {
             password: 'password'
         };
 
+        var otherItUser = {
+            username: 'test2',
+            password: 'password'
+        };
+
         var user = new User();
         user.local.username = itUser.username;
         user.local.password = itUser.password;
-
         user.save();
+
+        var otherUser = new User();
+        otherUser.local.username = otherItUser.username;
+        otherUser.local.password = otherItUser.password;
+        otherUser.save();
 
         agent.post('/api/login')
             .send(itUser)
             .end(function (err, results) {
                 token = results.body.token;
-                done();
+
+                agent.post('/api/login')
+                    .send(otherItUser)
+                    .end(function (err, results) {
+                        otherUserToken = results.body.token;
+                        done();
+                    });
             });
     });
 
@@ -162,7 +178,8 @@ describe('Outcome ITs', function () {
         describe('get', function () {
             var outcome1,
                 outcome2,
-                outcome3;
+                outcome3,
+                otherUsersOutcome;
 
             beforeEach(function (done) {
                 outcome1 = {
@@ -189,6 +206,14 @@ describe('Outcome ITs', function () {
                     effectiveDate: new Date()
                 };
 
+                otherUsersOutcome = {
+                    typeName: 'Daily',
+                    firstStory: 'The First Other Daily Story',
+                    secondStory: 'The Second Other Daily Story',
+                    thirdStory: 'The Third Other Daily Story',
+                    effectiveDate: new Date()
+                };
+
                 // Callback hell commencing!
                 // TODO: Consider supertest-as-promised
                 agent.post('/api/outcomes')
@@ -202,7 +227,12 @@ describe('Outcome ITs', function () {
                                 agent.post('/api/outcomes')
                                     .set('Authorization', 'bearer ' + token)
                                     .send(outcome3)
-                                    .end(done);
+                                    .end(function () {
+                                        agent.post('/api/outcomes')
+                                            .set('Authorization', 'bearer ' + otherUserToken)
+                                            .send(otherUsersOutcome)
+                                            .end(done);
+                                    });
                             });
                     });
             });
@@ -238,6 +268,24 @@ describe('Outcome ITs', function () {
                     });
             });
 
+            it('should get outcomes only for a single user', function (done) {
+                agent.get('/api/outcomes')
+                    .set('Authorization', 'bearer ' + otherUserToken)
+                    .expect(200)
+                    .end(function (err, results) {
+                        results.body.length.should.be.exactly(1);
+
+                        results.body[0].should.have.property('_id');
+                        results.body[0].should.have.property('typeName', otherUsersOutcome.typeName);
+                        results.body[0].should.have.property('firstStory', otherUsersOutcome.firstStory);
+                        results.body[0].should.have.property('secondStory', otherUsersOutcome.secondStory);
+                        results.body[0].should.have.property('thirdStory', otherUsersOutcome.thirdStory);
+                        results.body[0].should.have.property('effectiveDate');
+
+                        done();
+                    });
+            });
+
             it('should return 401 if no token is sent in', function (done) {
                 agent.get('/api/outcomes')
                     .expect(401, done);
@@ -247,10 +295,20 @@ describe('Outcome ITs', function () {
 
     describe('/outcomes/:outcomeId', function () {
         var outcome,
-            originalOutcome;
+            otherUsersOutcome,
+            originalOutcome,
+            otherUsersOriginalOutcome;
 
         beforeEach(function (done) {
             outcome = {
+                typeName: 'Daily',
+                firstStory: 'The First Daily Story',
+                secondStory: 'The Second Daily Story',
+                thirdStory: 'The Third Daily Story',
+                effectiveDate: new Date()
+            };
+
+            otherUsersOutcome = {
                 typeName: 'Daily',
                 firstStory: 'The First Daily Story',
                 secondStory: 'The Second Daily Story',
@@ -263,7 +321,15 @@ describe('Outcome ITs', function () {
                 .send(outcome)
                 .end(function (err, results) {
                     originalOutcome = results.body;
-                    done();
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + otherUserToken)
+                        .send(otherUsersOutcome)
+                        .end(function (err, results) {
+                            otherUsersOriginalOutcome = results.body;
+
+                            done();
+                        });
                 });
         });
 
@@ -288,6 +354,12 @@ describe('Outcome ITs', function () {
                 agent.get('/api/outcomes/56c9d89796ae562c201713c5')
                     .set('Authorization', 'bearer ' + token)
                     .expect(404, done);
+            });
+
+            it('should return 403 user dont have access', function (done) {
+                agent.get('/api/outcomes/' + otherUsersOriginalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
+                    .expect(403, done);
             });
 
             it('should return 401 if no token is sent in', function (done) {
@@ -392,6 +464,23 @@ describe('Outcome ITs', function () {
                     .expect(401, done);
             });
 
+            it('should return 403 if user dont have access', function (done) {
+                var newTypeName = 'Monthly';
+                var newFirstStory = 'The First Monthly Story';
+                var newSecondStory = 'The Second Monthly Story';
+                var newThirdStory = 'The Third Monthly Story';
+
+                outcome.typeName = newTypeName;
+                outcome.firstStory = newFirstStory;
+                outcome.secondStory = newSecondStory;
+                outcome.thirdStory = newThirdStory;
+
+                agent.put('/api/outcomes/' + otherUsersOriginalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
+                    .send(outcome)
+                    .expect(403, done);
+            });
+
         });
 
         describe('delete', function () {
@@ -413,6 +502,11 @@ describe('Outcome ITs', function () {
                     .expect(401, done);
             });
 
+            it('should return 403 if user dont have access', function (done) {
+                agent.delete('/api/outcomes/' + otherUsersOriginalOutcome._id)
+                    .set('Authorization', 'bearer ' + token)
+                    .expect(403, done);
+            });
         });
     });
 });

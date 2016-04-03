@@ -5,6 +5,7 @@ var should = require('should'),
     Reflection,
     User,
     token,
+    otherUserToken,
     agent;
 
 
@@ -22,17 +23,32 @@ describe('Reflection ITs', function () {
             password: 'password'
         };
 
+        var otherItUser = {
+            username: 'test2',
+            password: 'password'
+        };
+
         var user = new User();
         user.local.username = itUser.username;
         user.local.password = itUser.password;
-
         user.save();
+
+        var otherUser = new User();
+        otherUser.local.username = otherItUser.username;
+        otherUser.local.password = otherItUser.password;
+        otherUser.save();
 
         agent.post('/api/login')
             .send(itUser)
             .end(function (err, results) {
                 token = results.body.token;
-                done();
+
+                agent.post('/api/login')
+                    .send(otherItUser)
+                    .end(function (err, results) {
+                        otherUserToken = results.body.token;
+                        done();
+                    });
             });
     });
 
@@ -237,7 +253,8 @@ describe('Reflection ITs', function () {
         describe('get', function () {
             var reflection1,
                 reflection2,
-                reflection3;
+                reflection3,
+                otherUsersReflection;
 
             beforeEach(function (done) {
                 reflection1 = {
@@ -273,6 +290,17 @@ describe('Reflection ITs', function () {
                     effectiveDate: new Date()
                 };
 
+                otherUsersReflection = {
+                    typeName: 'Weekly',
+                    firstThingThatWentWell: 'The First Other Users Weekly Thing That Went Well',
+                    secondThingThatWentWell: 'The Second Other Users Weekly Thing That Went Well',
+                    thirdThingThatWentWell: 'The Third Other Users Weekly Thing That Went Well',
+                    firstThingToImprove: 'The First Other Users Weekly Thing To Improve',
+                    secondThingToImprove: 'The Second Other Users Weekly Thing To Improve',
+                    thirdThingToImprove: 'The Third Other Users Weekly Thing To Improve',
+                    effectiveDate: new Date()
+                };
+
                 // Callback hell commencing!
                 // TODO: Consider supertest-as-promised
                 agent.post('/api/reflections')
@@ -286,7 +314,12 @@ describe('Reflection ITs', function () {
                                 agent.post('/api/reflections')
                                     .set('Authorization', 'bearer ' + token)
                                     .send(reflection3)
-                                    .end(done);
+                                    .end(function () {
+                                        agent.post('/api/reflections')
+                                            .set('Authorization', 'bearer ' + otherUserToken)
+                                            .send(otherUsersReflection)
+                                            .end(done);
+                                    });
                             });
                     });
             });
@@ -331,6 +364,27 @@ describe('Reflection ITs', function () {
                     });
             });
 
+            it('should return reflections only for the user', function (done) {
+                agent.get('/api/reflections')
+                    .set('Authorization', 'bearer ' + otherUserToken)
+                    .expect(200)
+                    .end(function (err, results) {
+                        results.body.length.should.be.exactly(1);
+
+                        results.body[0].should.have.property('_id');
+                        results.body[0].should.have.property('typeName', otherUsersReflection.typeName);
+                        results.body[0].should.have.property('firstThingThatWentWell', otherUsersReflection.firstThingThatWentWell);
+                        results.body[0].should.have.property('secondThingThatWentWell', otherUsersReflection.secondThingThatWentWell);
+                        results.body[0].should.have.property('thirdThingThatWentWell', otherUsersReflection.thirdThingThatWentWell);
+                        results.body[0].should.have.property('firstThingToImprove', otherUsersReflection.firstThingToImprove);
+                        results.body[0].should.have.property('secondThingToImprove', otherUsersReflection.secondThingToImprove);
+                        results.body[0].should.have.property('thirdThingToImprove', otherUsersReflection.thirdThingToImprove);
+                        results.body[0].should.have.property('effectiveDate');
+
+                        done();
+                    });
+            });
+
             it('should return 401 if no token is sent in', function (done) {
                 agent.get('/api/reflections')
                     .expect(401, done);
@@ -340,7 +394,9 @@ describe('Reflection ITs', function () {
 
     describe('/reflections/:reflectionId', function () {
         var reflection,
-            originalReflection;
+            otherUsersReflection,
+            originalReflection,
+            originalOtherUsersReflection;
 
         beforeEach(function (done) {
             reflection = {
@@ -354,12 +410,31 @@ describe('Reflection ITs', function () {
                 effectiveDate: new Date()
             };
 
+            otherUsersReflection = {
+                typeName: 'Weekly',
+                firstThingThatWentWell: 'The First Other Users Weekly Thing That Went Well',
+                secondThingThatWentWell: 'The Second Other Users Weekly Thing That Went Well',
+                thirdThingThatWentWell: 'The Third Other Users Weekly Thing That Went Well',
+                firstThingToImprove: 'The First Other Users Weekly Thing To Improve',
+                secondThingToImprove: 'The Second Other Users Weekly Thing To Improve',
+                thirdThingToImprove: 'The Third Other Users Weekly Thing To Improve',
+                effectiveDate: new Date()
+            };
+
             agent.post('/api/reflections')
                 .set('Authorization', 'bearer ' + token)
                 .send(reflection)
                 .end(function (err, results) {
                     originalReflection = results.body;
-                    done();
+
+                    agent.post('/api/reflections')
+                        .set('Authorization', 'bearer ' + otherUserToken)
+                        .send(otherUsersReflection)
+                        .end(function (err, results) {
+                            originalOtherUsersReflection = results.body;
+
+                            done();
+                        });
                 });
         });
 
@@ -392,6 +467,12 @@ describe('Reflection ITs', function () {
             it('should return 401 if no token is sent in', function (done) {
                 agent.get('/api/reflections/' + originalReflection._id)
                     .expect(401, done);
+            });
+
+            it('should return 403 if user dont have access', function (done) {
+                agent.get('/api/reflections/' + originalOtherUsersReflection._id)
+                    .set('Authorization', 'bearer ' + token)
+                    .expect(403, done);
             });
 
         });
@@ -517,6 +598,29 @@ describe('Reflection ITs', function () {
                     .expect(401, done);
             });
 
+            it('should return 403 if user dont have access', function (done) {
+                var newTypeName = 'Monthly';
+                var newFirstThingThatWentWell = 'The First Monthly Thing That Went Well';
+                var newSecondThingThatWentWell = 'The Second Monthly Thing That Went Well';
+                var newThirdThingThatWentWell = 'The Third Monthly Thing That Went Well';
+                var newFirstThingToImprove = 'The First Monthly Thing To Improve';
+                var newSecondThingToImprove = 'The Second Monthly Thing To Improve';
+                var newThirdThingToImprove = 'The Third Monthly Thing To Improve';
+
+                reflection.typeName = newTypeName;
+                reflection.firstThingThatWentWell = newFirstThingThatWentWell;
+                reflection.secondThingThatWentWell = newSecondThingThatWentWell;
+                reflection.thirdThingThatWentWell = newThirdThingThatWentWell;
+                reflection.firstThingToImprove = newFirstThingToImprove;
+                reflection.secondThingToImprove = newSecondThingToImprove;
+                reflection.thirdThingToImprove = newThirdThingToImprove;
+
+                agent.put('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + otherUserToken)
+                    .send(reflection)
+                    .expect(403, done);
+            })
+
         });
 
         describe('delete', function () {
@@ -536,6 +640,12 @@ describe('Reflection ITs', function () {
             it('should return 401 if no token is sent in', function (done) {
                 agent.delete('/api/reflections/' + originalReflection._id)
                     .expect(401, done);
+            });
+
+            it('should return 403 if user dont have access', function (done) {
+                agent.delete('/api/reflections/' + originalReflection._id)
+                    .set('Authorization', 'bearer ' + otherUserToken)
+                    .expect(403, done);
             });
 
         });

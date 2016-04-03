@@ -28,7 +28,11 @@ var reflectionController = function (Reflection) {
     };
 
     var get = function (req, res) {
-        Reflection.find(function (error, reflections) {
+        var query = {
+            user: req.user._id
+        };
+
+        Reflection.find(query, function (error, reflections) {
             if (error) {
                 res.status(500).send(error);
             } else {

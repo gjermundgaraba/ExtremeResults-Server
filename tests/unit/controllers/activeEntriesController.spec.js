@@ -25,6 +25,7 @@ describe("Active Entries Controller", function() {
         };
 
         requestMock = {
+            user: {},
             query: {}
         };
 

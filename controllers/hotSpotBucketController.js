@@ -22,7 +22,11 @@ var hotSpotBucketsController = function (HotSpotBucket) {
     };
 
     var get = function (req, res) {
-        HotSpotBucket.find(function (error, hotSpotBuckets) {
+        var query = {
+            user: req.user._id
+        };
+
+        HotSpotBucket.find(query, function (error, hotSpotBuckets) {
             if (error) {
                 res.status(500).send(error);
             } else {

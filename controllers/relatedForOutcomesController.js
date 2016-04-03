@@ -11,6 +11,7 @@ var relatedForOutcomesController = function (Outcome, Reflection, moment) {
             var query = {
                 $or: [
                     {
+                        user: req.user._id,
                         typeName: 'Weekly',
                         effectiveDate: {
                             $gte: startOfWeek.toDate(),
@@ -18,6 +19,7 @@ var relatedForOutcomesController = function (Outcome, Reflection, moment) {
                         }
                     },
                     {
+                        user: req.user._id,
                         typeName: 'Daily',
                         effectiveDate: {
                             $gte: startOfYesterday.toDate(),

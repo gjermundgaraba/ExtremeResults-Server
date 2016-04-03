@@ -38,7 +38,7 @@ describe("Outcome Controller", function() {
                         firstStory: 'Test123'
                     }
                 ];
-                spyOn(OutcomeMock, 'find').and.callFake(function (callBack) {
+                spyOn(OutcomeMock, 'find').and.callFake(function (query, callBack) {
                     callBack(undefined, fakeOutcomes);
                 });
                 spyOn(responseMock, 'json');
@@ -50,7 +50,7 @@ describe("Outcome Controller", function() {
 
             it('should send back status code 500 on failure', function () {
                 var error = {};
-                spyOn(OutcomeMock, 'find').and.callFake(function (callBack) {
+                spyOn(OutcomeMock, 'find').and.callFake(function (query, callBack) {
                     callBack(error, undefined);
                 });
                 spyOn(responseMock, 'status').and.callThrough();

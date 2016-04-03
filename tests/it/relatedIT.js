@@ -7,6 +7,7 @@ var should = require('should'),
     Reflection,
     User,
     token,
+    otherUserToken,
     agent;
 
 
@@ -25,17 +26,32 @@ describe('Related ITs', function () {
             password: 'password'
         };
 
+        var otherItUser = {
+            username: 'test2',
+            password: 'password'
+        };
+
         var user = new User();
         user.local.username = itUser.username;
         user.local.password = itUser.password;
-
         user.save();
+
+        var otherUser = new User();
+        otherUser.local.username = otherItUser.username;
+        otherUser.local.password = otherItUser.password;
+        otherUser.save();
 
         agent.post('/api/login')
             .send(itUser)
             .end(function (err, results) {
                 token = results.body.token;
-                done();
+
+                agent.post('/api/login')
+                    .send(otherItUser)
+                    .end(function (err, results) {
+                        otherUserToken = results.body.token;
+                        done();
+                    });
             });
     });
 
@@ -179,6 +195,58 @@ describe('Related ITs', function () {
                                 });
                         })
 
+                });
+
+                it('should only get back related entries for the user', function (done) {
+                    var currentWeeklyOutcome = {
+                        typeName: 'Weekly',
+                        firstStory: 'The First Weekly Story',
+                        secondStory: 'The Second Weekly Story',
+                        thirdStory: 'The Third Weekly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    var otherUsersCurrentWeeklyOutcome = {
+                        typeName: 'Weekly',
+                        firstStory: 'The First Other Users Weekly Story',
+                        secondStory: 'The Second Other Users Weekly Story',
+                        thirdStory: 'The Third Other Users Weekly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    var yesterday = moment().subtract(1, 'days');
+                    var yesterdaysOutcome = {
+                        typeName: 'Daily',
+                        firstStory: 'The First Daily Story',
+                        secondStory: 'The Second Daily Story',
+                        thirdStory: 'The Third Daily Story',
+                        effectiveDate: yesterday.toDate()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(currentWeeklyOutcome)
+                        .end(function (err, postWeeklyOutcomeResults) {
+                            agent.post('/api/outcomes')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(yesterdaysOutcome)
+                                .end(function (err, yesterdaysOutcomeResults) {
+                                    agent.post('/api/outcomes')
+                                        .set('Authorization', 'bearer ' + otherUserToken)
+                                        .send(otherUsersCurrentWeeklyOutcome)
+                                        .end(function () {
+                                            agent.get('/api/related/outcomes?typeName=Daily')
+                                                .set('Authorization', 'bearer ' + token)
+                                                .expect(200)
+                                                .end(function (err, results) {
+                                                    results.body.length.should.be.exactly(2);
+                                                    results.body[0]._id.should.be.equal(postWeeklyOutcomeResults.body._id);
+                                                    results.body[1]._id.should.be.equal(yesterdaysOutcomeResults.body._id);
+                                                    done();
+                                                });
+                                        });
+                                });
+                        })
                 });
             });
 
@@ -443,6 +511,62 @@ describe('Related ITs', function () {
                                             results.body[0]._id.should.be.equal(lastWeeksReflectionResults.body._id);
                                             results.body[1]._id.should.be.equal(thisWeeksOutcomeResults.body._id);
                                             done();
+                                        });
+                                });
+                        });
+                });
+
+                it('should only get back related entries for the user', function (done) {
+                    var lastWeek = moment().subtract(1, 'weeks');
+                    var thisWeeksOutcome = {
+                        typeName: 'Weekly',
+                        firstStory: 'The First Weekly Story',
+                        secondStory: 'The Second Weekly Story',
+                        thirdStory: 'The Third Weekly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    var otherUsersWeeksOutcome = {
+                        typeName: 'Weekly',
+                        firstStory: 'The First Other Users Weekly Story',
+                        secondStory: 'The Second Other Users Weekly Story',
+                        thirdStory: 'The Third Other Users Weekly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    var lastWeeksReflection = {
+                        typeName: 'Weekly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: lastWeek.toDate()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(thisWeeksOutcome)
+                        .end(function (err, thisWeeksOutcomeResults) {
+                            agent.post('/api/reflections')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(lastWeeksReflection)
+                                .end(function (err, lastWeeksReflectionResults) {
+                                    agent.post('/api/outcomes')
+                                        .set('Authorization', 'bearer ' + otherUserToken)
+                                        .send(otherUsersWeeksOutcome)
+                                        .end(function () {
+                                            agent.get('/api/related/reflections?typeName=Weekly')
+                                                .set('Authorization', 'bearer ' + token)
+                                                .send()
+                                                .expect(200)
+                                                .end(function (err, results) {
+                                                    results.body.length.should.be.exactly(2);
+                                                    results.body[0]._id.should.be.equal(lastWeeksReflectionResults.body._id);
+                                                    results.body[1]._id.should.be.equal(thisWeeksOutcomeResults.body._id);
+                                                    done();
+                                                });
                                         });
                                 });
                         });

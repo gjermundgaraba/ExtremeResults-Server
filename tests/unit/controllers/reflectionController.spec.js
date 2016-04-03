@@ -38,7 +38,7 @@ describe("Reflection Controller", function() {
                         firstThingThatWentWell: 'Test123'
                     }
                 ];
-                spyOn(ReflectionMock, 'find').and.callFake(function (callBack) {
+                spyOn(ReflectionMock, 'find').and.callFake(function (query, callBack) {
                     callBack(undefined, fakeReflections);
                 });
                 spyOn(responseMock, 'json');
@@ -50,7 +50,7 @@ describe("Reflection Controller", function() {
 
             it('should send back status code 500 on failure', function () {
                 var error = {};
-                spyOn(ReflectionMock, 'find').and.callFake(function (callBack) {
+                spyOn(ReflectionMock, 'find').and.callFake(function (query, callBack) {
                     callBack(error, undefined);
                 });
                 spyOn(responseMock, 'status').and.callThrough();

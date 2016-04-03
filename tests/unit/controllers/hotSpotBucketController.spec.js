@@ -40,7 +40,7 @@ describe("Hot Spot Bucket Controller", function() {
                         hotSpots: ['test']
                     }
                 ];
-                spyOn(HotSpotBucketMock, 'find').and.callFake(function (callBack) {
+                spyOn(HotSpotBucketMock, 'find').and.callFake(function (query, callBack) {
                     callBack(undefined, fakeHotSpotBuckets);
                 });
                 spyOn(responseMock, 'json');
@@ -52,7 +52,7 @@ describe("Hot Spot Bucket Controller", function() {
 
             it('should send back status code 500 on failure', function () {
                 var error = {};
-                spyOn(HotSpotBucketMock, 'find').and.callFake(function (callBack) {
+                spyOn(HotSpotBucketMock, 'find').and.callFake(function (query, callBack) {
                     callBack(error, undefined);
                 });
                 spyOn(responseMock, 'status').and.callThrough();

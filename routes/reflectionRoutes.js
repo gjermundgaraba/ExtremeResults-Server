@@ -16,8 +16,12 @@ var routes = function (Reflection, passport) {
             if (err) {
                 res.status(500).send(err);
             } else if (reflection) {
-                req.reflection = reflection;
-                next();
+                if (!reflection.user.equals(req.user._id)) {
+                    res.status(403).send('You don\'t have access to this reflection');
+                } else {
+                    req.reflection = reflection;
+                    next();
+                }
             } else {
                 res.status(404).send('No reflection with that id found');
             }

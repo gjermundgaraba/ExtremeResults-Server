@@ -8,6 +8,7 @@ var relatedForReflectionsController = function (Outcome, Reflection, moment) {
             var endOfLastWeek = moment().endOf('isoWeek').subtract(1, 'weeks');
 
             var lastWeeksEntriesQuery = {
+                user: req.user._id,
                 typeName: 'Weekly',
                 effectiveDate: {
                     $gte: startOfLastWeek.toDate(),
@@ -16,6 +17,7 @@ var relatedForReflectionsController = function (Outcome, Reflection, moment) {
             };
 
             var thisWeeksEntriesQuery = {
+                user: req.user._id,
                 typeName: 'Weekly',
                 effectiveDate: {
                     $gte: startOfThisWeek.toDate(),

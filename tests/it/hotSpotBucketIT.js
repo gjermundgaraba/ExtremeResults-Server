@@ -5,6 +5,7 @@ var should = require('should'),
     HotSpotBucket,
     User,
     token,
+    otherUserToken,
     agent;
 
 
@@ -22,17 +23,32 @@ describe('Hot Spot Bucket ITs', function () {
             password: 'password'
         };
 
+        var otherItUser = {
+            username: 'test2',
+            password: 'password'
+        };
+
         var user = new User();
         user.local.username = itUser.username;
         user.local.password = itUser.password;
-
         user.save();
+
+        var otherUser = new User();
+        otherUser.local.username = otherItUser.username;
+        otherUser.local.password = otherItUser.password;
+        otherUser.save();
 
         agent.post('/api/login')
             .send(itUser)
             .end(function (err, results) {
                 token = results.body.token;
-                done();
+
+                agent.post('/api/login')
+                    .send(otherItUser)
+                    .end(function (err, results) {
+                        otherUserToken = results.body.token;
+                        done();
+                    });
             });
     });
 
@@ -104,7 +120,8 @@ describe('Hot Spot Bucket ITs', function () {
         describe('get', function () {
             var hotSpotBucket1,
                 hotSpotBucket2,
-                hotSpotBucket3;
+                hotSpotBucket3,
+                otherUsersHotSpotBucket;
 
             beforeEach(function (done) {
                 hotSpotBucket1 = {
@@ -122,6 +139,11 @@ describe('Hot Spot Bucket ITs', function () {
                     hotSpots: ['Test', 'Test1232']
                 };
 
+                otherUsersHotSpotBucket = {
+                    name: 'Hot Spot Bucket For Other User Name',
+                    hotSpots: ['Test', 'Test1232']
+                };
+
                 // Callback hell commencing!
                 // TODO: Consider supertest-as-promised
                 agent.post('/api/hotSpotBuckets')
@@ -135,7 +157,12 @@ describe('Hot Spot Bucket ITs', function () {
                                 agent.post('/api/hotSpotBuckets')
                                     .set('Authorization', 'bearer ' + token)
                                     .send(hotSpotBucket3)
-                                    .end(done);
+                                    .end(function () {
+                                        agent.post('/api/hotSpotBuckets')
+                                            .set('Authorization', 'bearer ' + otherUserToken)
+                                            .send(otherUsersHotSpotBucket)
+                                            .end(done);
+                                    });
                             });
                     });
             });
@@ -163,6 +190,21 @@ describe('Hot Spot Bucket ITs', function () {
                     });
             });
 
+            it('should only get hotSpotBuckets for that user', function (done) {
+                agent.get('/api/hotSpotBuckets')
+                    .set('Authorization', 'bearer ' + otherUserToken)
+                    .expect(200)
+                    .end(function (err, results) {
+                        results.body.length.should.be.exactly(1);
+
+                        results.body[0].should.have.property('_id');
+                        results.body[0].should.have.property('name', otherUsersHotSpotBucket.name);
+                        results.body[0].should.have.property('hotSpots', otherUsersHotSpotBucket.hotSpots);
+
+                        done();
+                    });
+            });
+
             it('should return 401 if no token is sent in', function (done) {
                 agent.get('/api/hotSpotBuckets')
                     .expect(401, done);
@@ -172,12 +214,19 @@ describe('Hot Spot Bucket ITs', function () {
 
     describe('/hotSpotBuckets/:hotSpotBucketId', function () {
         var hotSpotBucket,
-            originalHotSpotBucket;
+            otherUsersHotSpotBucket,
+            originalHotSpotBucket,
+            originalOtherUsersHotSpotBucket;
 
         beforeEach(function (done) {
             hotSpotBucket = {
-                name: 'Hot Spot Bucket 3 Name',
+                name: 'Hot Spot Bucket Name',
                 hotSpots: ['Test', 'Test1232']
+            };
+
+            otherUsersHotSpotBucket = {
+                name: 'Hot Spot Bucket Ohter Users Name',
+                    hotSpots: ['Test', 'Test1232']
             };
 
             agent.post('/api/hotSpotBuckets')
@@ -185,7 +234,15 @@ describe('Hot Spot Bucket ITs', function () {
                 .send(hotSpotBucket)
                 .end(function (err, results) {
                     originalHotSpotBucket = results.body;
-                    done();
+
+                    agent.post('/api/hotSpotBuckets')
+                        .set('Authorization', 'bearer ' + otherUserToken)
+                        .send(otherUsersHotSpotBucket)
+                        .end(function (err, results) {
+                            originalOtherUsersHotSpotBucket = results.body;
+
+                            done();
+                        });
                 });
         });
 
@@ -246,6 +303,19 @@ describe('Hot Spot Bucket ITs', function () {
                     .expect(401, done);
             });
 
+            it('should return 403 if user dont have access', function (done) {
+                var newName = 'New Name';
+                var newHotSpots = ['test123', 'test1234', 'derp'];
+
+                hotSpotBucket.name = newName;
+                hotSpotBucket.hotSpots = newHotSpots;
+
+                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket._id)
+                    .set('Authorization', 'bearer ' + otherUserToken)
+                    .send(hotSpotBucket)
+                    .expect(403, done);
+            });
+
         });
 
         describe('delete', function () {
@@ -265,6 +335,12 @@ describe('Hot Spot Bucket ITs', function () {
             it('should return 401 if no token is sent in', function (done) {
                 agent.delete('/api/hotSpotBuckets/' + originalHotSpotBucket._id)
                     .expect(401, done);
+            });
+
+            it('should return 403 if user dont have access', function (done) {
+                agent.delete('/api/hotSpotBuckets/' + originalOtherUsersHotSpotBucket._id)
+                    .set('Authorization', 'bearer ' + token)
+                    .expect(403, done);
             });
 
         });

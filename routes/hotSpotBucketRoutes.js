@@ -16,8 +16,12 @@ var routes = function (HotSpotBucket, passport) {
             if (err) {
                 res.status(500).send(err);
             } else if (hotSpotBucket) {
-                req.hotSpotBucket = hotSpotBucket;
-                next();
+                if (!hotSpotBucket.user.equals(req.user._id)) {
+                    res.status(403).send('You don\'t have access to this hotspot bucket');
+                } else {
+                    req.hotSpotBucket = hotSpotBucket;
+                    next();
+                }
             } else {
                 res.status(404).send('No hot spot bucket with that id found');
             }
