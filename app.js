@@ -1,4 +1,5 @@
 var express = require('express'),
+    cors = require('cors'),
     mongoose = require('mongoose'),
     bodyParser = require('body-parser'),
     jwt = require('jwt-simple'),
@@ -50,6 +51,7 @@ passport.use(new BearerStrategy(
 var app = express();
 var port = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(passport.initialize());
