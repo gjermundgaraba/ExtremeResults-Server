@@ -97,8 +97,8 @@ describe('Outcome ITs', function () {
                                     .expect(200)
                                     .end(function (err, results) {
                                         results.body.length.should.be.exactly(2);
-                                        results.body[0]._id.should.be.equal(dailyResults.body._id);
-                                        results.body[1]._id.should.be.equal(weeklyResults.body._id);
+                                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
+                                        results.body[1].objectId.should.be.equal(weeklyResults.body._id);
                                         done();
                                     });
                             });
@@ -136,7 +136,7 @@ describe('Outcome ITs', function () {
                                     .expect(200)
                                     .end(function (err, results) {
                                         results.body.length.should.be.exactly(1);
-                                        results.body[0]._id.should.be.equal(dailyResults.body._id);
+                                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
                                         done();
                                     });
                             });
@@ -175,7 +175,7 @@ describe('Outcome ITs', function () {
                                     .expect(200)
                                     .end(function (err, results) {
                                         results.body.length.should.be.exactly(1);
-                                        results.body[0]._id.should.be.equal(dailyResults.body._id);
+                                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
                                         done();
                                     });
                             });
@@ -214,7 +214,7 @@ describe('Outcome ITs', function () {
                                     .expect(200)
                                     .end(function (err, results) {
                                         results.body.length.should.be.exactly(1);
-                                        results.body[0]._id.should.be.equal(weeklyResults.body._id);
+                                        results.body[0].objectId.should.be.equal(weeklyResults.body._id);
                                         done();
                                     });
                             });

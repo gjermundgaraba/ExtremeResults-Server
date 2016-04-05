@@ -27,10 +27,24 @@ var activeEntriesController = function (Outcome, moment) {
             ]
         };
 
-        Outcome.find(query, function (err, results) {
+        Outcome.find(query, function (err, queryResults) {
             if (err) {
                 res.status(500).send(err);
             } else {
+                var results = [];
+
+                queryResults.forEach(function (result) {
+                    results.push({
+                        objectId: result._id,
+                        typeName: result.typeName,
+                        firstStory: result.firstStory,
+                        secondStory: result.secondStory,
+                        thirdStory: result.thirdStory,
+                        effectiveDate: result.effectiveDate,
+                        className: 'Outcome'
+                    })
+                });
+
                 res.json(results);
             }
         })
