@@ -2,10 +2,15 @@ var relatedForReflectionsController = function (Outcome, Reflection, moment) {
 
     var get = function (req, res) {
         if (req.query.typeName === 'Weekly') {
-            var startOfThisWeek  = moment().startOf('isoWeek');
-            var endOfThisWeek  = moment().endOf('isoWeek');
-            var startOfLastWeek = moment().startOf('isoWeek').subtract(1, 'weeks');
-            var endOfLastWeek = moment().endOf('isoWeek').subtract(1, 'weeks');
+            var momentObj = moment();
+            if (req.query.effectiveDate) {
+                momentObj = moment(req.query.effectiveDate);
+            }
+
+            var startOfThisWeek = momentObj.clone().startOf('isoWeek');
+            var endOfThisWeek = momentObj.clone().endOf('isoWeek');
+            var startOfLastWeek = momentObj.clone().startOf('isoWeek').subtract(1, 'weeks');
+            var endOfLastWeek = momentObj.clone().endOf('isoWeek').subtract(1, 'weeks');
 
             var lastWeeksEntriesQuery = {
                 user: req.user._id,
@@ -33,7 +38,36 @@ var relatedForReflectionsController = function (Outcome, Reflection, moment) {
                         if (err) {
                             res.status(500).send(err);
                         } else {
-                            res.json(reflections.concat(outcomes));
+                            var related = [];
+
+                            reflections.forEach(function (reflection) {
+                                related.push({
+                                    objectId: reflection._id,
+                                    typeName: reflection.typeName,
+                                    firstThingThatWentWell: reflection.firstThingThatWentWell,
+                                    secondThingThatWentWell: reflection.secondThingThatWentWell,
+                                    thirdThingThatWentWell: reflection.thirdThingThatWentWell,
+                                    firstThingToImprove: reflection.firstThingToImprove,
+                                    secondThingToImprove: reflection.secondThingToImprove,
+                                    thirdThingToImprove: reflection.thirdThingToImprove,
+                                    effectiveDate: reflection.effectiveDate,
+                                    className: 'Reflection'
+                                });
+                            });
+
+                            outcomes.forEach(function (outcome) {
+                                related.push({
+                                    objectId: outcome._id,
+                                    typeName: outcome.typeName,
+                                    firstStory: outcome.firstStory,
+                                    secondStory: outcome.secondStory,
+                                    thirdStory: outcome.thirdStory,
+                                    effectiveDate: outcome.effectiveDate,
+                                    className: 'Outcome'
+                                });
+                            });
+
+                            res.json(related);
                         }
                     });
                 }

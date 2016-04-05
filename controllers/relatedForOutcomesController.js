@@ -33,7 +33,21 @@ var relatedForOutcomesController = function (Outcome, Reflection, moment) {
                if (err) {
                    res.status(500).send(err);
                } else {
-                   res.json(outcomes);
+                   var related = [];
+
+                   outcomes.forEach(function (outcome) {
+                       related.push({
+                           objectId: outcome._id,
+                           typeName: outcome.typeName,
+                           firstStory: outcome.firstStory,
+                           secondStory: outcome.secondStory,
+                           thirdStory: outcome.thirdStory,
+                           effectiveDate: outcome.effectiveDate,
+                           className: 'Outcome'
+                       });
+                   });
+
+                   res.json(related);
                }
             });
         } else if (req.query.typeName === 'Weekly') {
@@ -56,7 +70,36 @@ var relatedForOutcomesController = function (Outcome, Reflection, moment) {
                        if (err) {
                            res.status(500).send(err);
                        } else {
-                           res.json(reflections.concat(outcomes));
+                           var related = [];
+
+                           reflections.forEach(function (reflection) {
+                               related.push({
+                                   objectId: reflection._id,
+                                   typeName: reflection.typeName,
+                                   firstThingThatWentWell: reflection.firstThingThatWentWell,
+                                   secondThingThatWentWell: reflection.secondThingThatWentWell,
+                                   thirdThingThatWentWell: reflection.thirdThingThatWentWell,
+                                   firstThingToImprove: reflection.firstThingToImprove,
+                                   secondThingToImprove: reflection.secondThingToImprove,
+                                   thirdThingToImprove: reflection.thirdThingToImprove,
+                                   effectiveDate: reflection.effectiveDate,
+                                   className: 'Reflection'
+                               });
+                           });
+
+                           outcomes.forEach(function (outcome) {
+                               related.push({
+                                   objectId: outcome._id,
+                                   typeName: outcome.typeName,
+                                   firstStory: outcome.firstStory,
+                                   secondStory: outcome.secondStory,
+                                   thirdStory: outcome.thirdStory,
+                                   effectiveDate: outcome.effectiveDate,
+                                   className: 'Outcome'
+                               });
+                           });
+
+                           res.json(related);
                        }
                    });
                }

@@ -102,7 +102,7 @@ describe('Related ITs', function () {
                                 .expect(200)
                                 .end(function (err, results) {
                                     results.body.length.should.be.exactly(1);
-                                    results.body[0]._id.should.be.equal(postOutcomeResults.body._id);
+                                    results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
                                     done();
                                 });
                         });
@@ -151,7 +151,7 @@ describe('Related ITs', function () {
                                 .expect(200)
                                 .end(function (err, results) {
                                     results.body.length.should.be.exactly(1);
-                                    results.body[0]._id.should.be.equal(postOutcomeResults.body._id);
+                                    results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
                                     done();
                                 })
                         })
@@ -188,8 +188,8 @@ describe('Related ITs', function () {
                                         .expect(200)
                                         .end(function (err, results) {
                                             results.body.length.should.be.exactly(2);
-                                            results.body[0]._id.should.be.equal(postWeeklyOutcomeResults.body._id);
-                                            results.body[1]._id.should.be.equal(yesterdaysOutcomeResults.body._id);
+                                            results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
+                                            results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
                                             done();
                                         });
                                 });
@@ -240,8 +240,8 @@ describe('Related ITs', function () {
                                                 .expect(200)
                                                 .end(function (err, results) {
                                                     results.body.length.should.be.exactly(2);
-                                                    results.body[0]._id.should.be.equal(postWeeklyOutcomeResults.body._id);
-                                                    results.body[1]._id.should.be.equal(yesterdaysOutcomeResults.body._id);
+                                                    results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
+                                                    results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
                                                     done();
                                                 });
                                         });
@@ -273,7 +273,7 @@ describe('Related ITs', function () {
                                 .expect(200)
                                 .end(function (err, results) {
                                     results.body.length.should.be.exactly(1);
-                                    results.body[0]._id.should.be.equal(postReflectionResults.body._id);
+                                    results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
                                     done();
                                 });
                         })
@@ -326,7 +326,7 @@ describe('Related ITs', function () {
                                 .expect(200)
                                 .end(function (err, results) {
                                     results.body.length.should.be.exactly(1);
-                                    results.body[0]._id.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                    results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
                                     done();
                                 });
                         });
@@ -366,8 +366,8 @@ describe('Related ITs', function () {
                                         .expect(200)
                                         .end(function (err, results) {
                                             results.body.length.should.be.exactly(2);
-                                            results.body[0]._id.should.be.equal(lastWeeksReflectionResults.body._id);
-                                            results.body[1]._id.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                            results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                                            results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
                                             done();
                                         });
                                 });
@@ -414,7 +414,7 @@ describe('Related ITs', function () {
                                 .expect(200)
                                 .end(function (err, results) {
                                     results.body.length.should.be.exactly(1);
-                                    results.body[0]._id.should.be.equal(postReflectionResults.body._id);
+                                    results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
                                     done();
                                 });
                         })
@@ -467,7 +467,7 @@ describe('Related ITs', function () {
                                 .expect(200)
                                 .end(function (err, results) {
                                     results.body.length.should.be.exactly(1);
-                                    results.body[0]._id.should.be.equal(thisWeeksOutcomeResults.body._id);
+                                    results.body[0].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
                                     done();
                                 });
                         });
@@ -508,8 +508,8 @@ describe('Related ITs', function () {
                                         .expect(200)
                                         .end(function (err, results) {
                                             results.body.length.should.be.exactly(2);
-                                            results.body[0]._id.should.be.equal(lastWeeksReflectionResults.body._id);
-                                            results.body[1]._id.should.be.equal(thisWeeksOutcomeResults.body._id);
+                                            results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                                            results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
                                             done();
                                         });
                                 });
@@ -563,13 +563,59 @@ describe('Related ITs', function () {
                                                 .expect(200)
                                                 .end(function (err, results) {
                                                     results.body.length.should.be.exactly(2);
-                                                    results.body[0]._id.should.be.equal(lastWeeksReflectionResults.body._id);
-                                                    results.body[1]._id.should.be.equal(thisWeeksOutcomeResults.body._id);
+                                                    results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                                                    results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
                                                     done();
                                                 });
                                         });
                                 });
                         });
+                });
+
+                describe('effectiveDate param', function () {
+                    it('should get back based on effectiveDate sent in', function () {
+                        var lastWeek = moment().subtract(1, 'weeks');
+                        var twoWeeksAgo = moment().subtract(2, 'weeks');
+                        var lastWeeksOutcome = {
+                            typeName: 'Weekly',
+                            firstStory: 'The First Weekly Story',
+                            secondStory: 'The Second Weekly Story',
+                            thirdStory: 'The Third Weekly Story',
+                            effectiveDate: lastWeek.toDate()
+                        };
+
+                        var twoWeeksAgoReflection = {
+                            typeName: 'Weekly',
+                            firstThingThatWentWell: 'The First Thing That Went Well',
+                            secondThingThatWentWell: 'The Second Thing That Went Well',
+                            thirdThingThatWentWell: 'The Third Thing That Went Well',
+                            firstThingToImprove: 'The First Thing To Improve',
+                            secondThingToImprove: 'The Second Thing To Improve',
+                            thirdThingToImprove: 'The Third Thing To Improve',
+                            effectiveDate: twoWeeksAgo.toDate()
+                        };
+
+                        agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
+                            .send(lastWeeksOutcome)
+                            .end(function (err, lastWeeksOutcomeResults) {
+                                agent.post('/api/reflections')
+                                    .set('Authorization', 'bearer ' + token)
+                                    .send(twoWeeksAgoReflection)
+                                    .end(function (err, twoWeeksAgoReflectionResults) {
+                                        agent.get('/api/related/reflections?typeName=Weekly&effectiveDate=' + encodeURI(lastWeek.toDate()))
+                                            .set('Authorization', 'bearer ' + token)
+                                            .send()
+                                            .expect(200)
+                                            .end(function (err, results) {
+                                                results.body.length.should.be.exactly(2);
+                                                results.body[0].objectId.should.be.equal(twoWeeksAgoReflectionResults.body._id);
+                                                results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                                done();
+                                            });
+                                    });
+                            });
+                    });
                 });
             });
 

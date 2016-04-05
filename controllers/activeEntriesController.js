@@ -31,10 +31,10 @@ var activeEntriesController = function (Outcome, moment) {
             if (err) {
                 res.status(500).send(err);
             } else {
-                var results = [];
+                var entries = [];
 
                 queryResults.forEach(function (result) {
-                    results.push({
+                    entries.push({
                         objectId: result._id,
                         typeName: result.typeName,
                         firstStory: result.firstStory,
@@ -45,7 +45,7 @@ var activeEntriesController = function (Outcome, moment) {
                     })
                 });
 
-                res.json(results);
+                res.json(entries);
             }
         })
 
