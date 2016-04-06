@@ -32,10 +32,12 @@ describe("Hot Spot Bucket Controller", function() {
             it('should get all hot spot buckets', function () {
                 var fakeHotSpotBuckets = [
                     {
+                        _id: '123',
                         name: 'Test1',
                         hotSpots: []
                     },
                     {
+                        _id: '1234',
                         name: 'Test2',
                         hotSpots: ['test']
                     }
@@ -47,7 +49,15 @@ describe("Hot Spot Bucket Controller", function() {
                 hotSpotBucketController.get(requestMock, responseMock);
 
                 expect(HotSpotBucketMock.find).toHaveBeenCalled();
-                expect(responseMock.json).toHaveBeenCalledWith(fakeHotSpotBuckets);
+                expect(responseMock.json).toHaveBeenCalledWith([{
+                    objectId: fakeHotSpotBuckets[0]._id,
+                    name: fakeHotSpotBuckets[0].name,
+                    hotSpots: fakeHotSpotBuckets[0].hotSpots
+                },{
+                    objectId: fakeHotSpotBuckets[1]._id,
+                    name: fakeHotSpotBuckets[1].name,
+                    hotSpots: fakeHotSpotBuckets[1].hotSpots
+                }]);
             });
 
             it('should send back status code 500 on failure', function () {
@@ -113,6 +123,31 @@ describe("Hot Spot Bucket Controller", function() {
 
                 expect(responseMock.status).toHaveBeenCalledWith(201);
                 expect(responseMock.send).toHaveBeenCalled();
+            });
+
+            it('should send back an object with all fields', function () {
+                spyOn(responseMock, 'status').and.callThrough();
+                spyOn(responseMock, 'send').and.callThrough();
+
+                var objectId = '1234';
+                spyOn(HotSpotBucketMock.prototype, 'save').and.callFake(function (callBack) {
+                    this._id = objectId;
+                    callBack(undefined);
+                });
+
+                var name = 'name';
+                var hotSpots = [ 'test' ];
+                requestMock.body.name = name;
+                requestMock.body.hotSpots = hotSpots;
+
+                hotSpotBucketController.post(requestMock, responseMock);
+
+                expect(responseMock.status).toHaveBeenCalledWith(201);
+                expect(responseMock.send).toHaveBeenCalledWith({
+                    name: name,
+                    hotSpots: hotSpots,
+                    objectId: objectId
+                });
             });
 
         });

@@ -76,7 +76,7 @@ describe('Hot Spot Bucket ITs', function () {
                     .send(hotSpotBucket)
                     .expect(201)
                     .end(function (err, results) {
-                        results.body.should.have.property('_id');
+                        results.body.should.have.property('objectId');
                         results.body.should.have.property('name', hotSpotBucket.name);
                         results.body.should.have.property('hotSpots', hotSpotBucket.hotSpots);
                         done();
@@ -174,15 +174,15 @@ describe('Hot Spot Bucket ITs', function () {
                     .end(function (err, results) {
                         results.body.length.should.be.exactly(3);
 
-                        results.body[0].should.have.property('_id');
+                        results.body[0].should.have.property('objectId');
                         results.body[0].should.have.property('name', hotSpotBucket1.name);
                         results.body[0].should.have.property('hotSpots', hotSpotBucket1.hotSpots);
 
-                        results.body[1].should.have.property('_id');
+                        results.body[1].should.have.property('objectId');
                         results.body[1].should.have.property('name', hotSpotBucket2.name);
                         results.body[1].should.have.property('hotSpots', hotSpotBucket2.hotSpots);
 
-                        results.body[2].should.have.property('_id');
+                        results.body[2].should.have.property('objectId');
                         results.body[2].should.have.property('name', hotSpotBucket3.name);
                         results.body[2].should.have.property('hotSpots', hotSpotBucket3.hotSpots);
 
@@ -197,7 +197,7 @@ describe('Hot Spot Bucket ITs', function () {
                     .end(function (err, results) {
                         results.body.length.should.be.exactly(1);
 
-                        results.body[0].should.have.property('_id');
+                        results.body[0].should.have.property('objectId');
                         results.body[0].should.have.property('name', otherUsersHotSpotBucket.name);
                         results.body[0].should.have.property('hotSpots', otherUsersHotSpotBucket.hotSpots);
 
@@ -255,7 +255,7 @@ describe('Hot Spot Bucket ITs', function () {
                 hotSpotBucket.name = newName;
                 hotSpotBucket.hotSpots = newHotSpots;
 
-                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket._id)
+                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket.objectId)
                     .set('Authorization', 'bearer ' + token)
                     .send(hotSpotBucket)
                     .expect(200)
@@ -276,7 +276,7 @@ describe('Hot Spot Bucket ITs', function () {
             it('should return 400 if name is missing', function (done) {
                 delete hotSpotBucket.name;
 
-                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket._id)
+                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket.objectId)
                     .set('Authorization', 'bearer ' + token)
                     .send(hotSpotBucket)
                     .expect(400, done);
@@ -285,7 +285,7 @@ describe('Hot Spot Bucket ITs', function () {
             it('should return 200 even if hotSpots is missing', function (done) {
                 delete hotSpotBucket.hotSpots;
 
-                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket._id)
+                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket.objectId)
                     .set('Authorization', 'bearer ' + token)
                     .send(hotSpotBucket)
                     .expect(200, done);
@@ -298,7 +298,7 @@ describe('Hot Spot Bucket ITs', function () {
                 hotSpotBucket.name = newName;
                 hotSpotBucket.hotSpots = newHotSpots;
 
-                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket._id)
+                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket.objectId)
                     .send(hotSpotBucket)
                     .expect(401, done);
             });
@@ -310,7 +310,7 @@ describe('Hot Spot Bucket ITs', function () {
                 hotSpotBucket.name = newName;
                 hotSpotBucket.hotSpots = newHotSpots;
 
-                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket._id)
+                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket.objectId)
                     .set('Authorization', 'bearer ' + otherUserToken)
                     .send(hotSpotBucket)
                     .expect(403, done);
@@ -321,7 +321,7 @@ describe('Hot Spot Bucket ITs', function () {
         describe('delete', function () {
 
             it('should be able to delete', function (done) {
-                agent.delete('/api/hotSpotBuckets/' + originalHotSpotBucket._id)
+                agent.delete('/api/hotSpotBuckets/' + originalHotSpotBucket.objectId)
                     .set('Authorization', 'bearer ' + token)
                     .expect(204, done);
             });
@@ -333,12 +333,12 @@ describe('Hot Spot Bucket ITs', function () {
             });
 
             it('should return 401 if no token is sent in', function (done) {
-                agent.delete('/api/hotSpotBuckets/' + originalHotSpotBucket._id)
+                agent.delete('/api/hotSpotBuckets/' + originalHotSpotBucket.objectId)
                     .expect(401, done);
             });
 
             it('should return 403 if user dont have access', function (done) {
-                agent.delete('/api/hotSpotBuckets/' + originalOtherUsersHotSpotBucket._id)
+                agent.delete('/api/hotSpotBuckets/' + originalOtherUsersHotSpotBucket.objectId)
                     .set('Authorization', 'bearer ' + token)
                     .expect(403, done);
             });

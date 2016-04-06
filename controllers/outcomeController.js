@@ -43,7 +43,6 @@ var outcomeController = function (Outcome) {
     };
 
     var putOutcomeId = function (req, res) {
-        console.log(req.body);
         req.outcome.typeName = req.body.typeName;
         req.outcome.firstStory = req.body.firstStory;
         req.outcome.secondStory = req.body.secondStory;

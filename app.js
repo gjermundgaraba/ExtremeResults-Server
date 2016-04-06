@@ -63,6 +63,7 @@ var reflectionRouter = require('./routes/reflectionRoutes')(Reflection, passport
 var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket, passport);
 var relatedRouter = require('./routes/relatedRoutes')(Outcome, Reflection, passport);
 var activeEntriesRouter = require('./routes/activeEntriesRoutes')(Outcome, passport);
+var forTestRouter = require('./routes/forTestRoutes')(Outcome, Reflection, HotSpotBucket, User);
 
 app.use('/api/register', registerRouter);
 app.use('/api/login', loginRouter);
@@ -71,6 +72,7 @@ app.use('/api/reflections', reflectionRouter);
 app.use('/api/hotSpotBuckets', hotSpotBucketRouter);
 app.use('/api/related', relatedRouter);
 app.use('/api/activeEntries', activeEntriesRouter);
+app.use('/api/forTest', forTestRouter);
 
 
 var server = app.listen(port);

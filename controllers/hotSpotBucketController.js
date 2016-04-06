@@ -15,7 +15,12 @@ var hotSpotBucketsController = function (HotSpotBucket) {
                 if (error) {
                     res.status(500).send(error);
                 } else {
-                    res.status(201).send(hotSpotBucket);
+                    var responseHotSpotBucket = {
+                        objectId: hotSpotBucket._id,
+                        name: hotSpotBucket.name,
+                        hotSpots: hotSpotBucket.hotSpots
+                    };
+                    res.status(201).send(responseHotSpotBucket);
                 }
             });
         }
@@ -30,7 +35,17 @@ var hotSpotBucketsController = function (HotSpotBucket) {
             if (error) {
                 res.status(500).send(error);
             } else {
-                res.json(hotSpotBuckets);
+                var response = [];
+
+                hotSpotBuckets.forEach(function (hotSpotBucket) {
+                    response.push({
+                        objectId: hotSpotBucket._id,
+                        name: hotSpotBucket.name,
+                        hotSpots: hotSpotBucket.hotSpots
+                    });
+                });
+
+                res.json(response);
             }
         });
     };
