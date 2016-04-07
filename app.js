@@ -7,13 +7,19 @@ var express = require('express'),
     LocalStrategy = require('passport-local').Strategy,
     BearerStrategy = require('passport-http-bearer').Strategy;
 
-var db;
+var mongoOptions;
 
-if (process.env.ENV === 'test') {
-    db = mongoose.connect('mongodb://localhost/xr_it');
-} else {
-    db = mongoose.connect('mongodb://localhost/xr');
+if (typeof process.env.MONGO_USERNAME !== 'undefined') {
+    mongoOptions = {
+        user: process.env.MONGO_USERNAME
+    };
+
+    if (process.env.MONGO_PASSWORD) {
+        mongoOptions.pass = process.env.MONGO_PASSWORD;
+    }
 }
+
+var db = mongoose.connect(process.env.MONGO_SERVER, mongoOptions);
 
 var User = require('./models/userModel');
 var Outcome = require('./models/outcomeModel');

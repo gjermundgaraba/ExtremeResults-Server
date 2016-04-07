@@ -9,10 +9,11 @@ var gulp = require('gulp'),
 
 gulp.task('default', function () {
     nodemon({
-        exec: 'node --debug',
+        exec: 'node-inspector & node --debug',
         script: 'app.js',
         ext: 'js',
         env: {
+            MONGO_SERVER: 'mongodb://localhost/xr',
             PORT: 4321
         },
         ignore: ['./node_modules/**', 'spec/**']
@@ -34,7 +35,7 @@ gulp.task('pre-test', function () {
 gulp.task('it', ['pre-test'], function () {
     env({
        vars: {
-           ENV: 'test',
+           MONGO_SERVER: 'mongodb://localhost/xr_it',
            PORT: 3333
        }
     });
