@@ -9,7 +9,7 @@ var gulp = require('gulp'),
 
 gulp.task('default', function () {
     nodemon({
-        exec: 'node-inspector & node --debug',
+        exec: 'node',
         script: 'app.js',
         ext: 'js',
         env: {

@@ -27,7 +27,7 @@ var activeEntriesController = function (Outcome, moment) {
             ]
         };
 
-        Outcome.find(query, function (err, queryResults) {
+        Outcome.find(query, null, {sort: '-effectiveDate'}, function (err, queryResults) {
             if (err) {
                 res.status(500).send(err);
             } else {

@@ -1,22 +1,19 @@
 {
   "name": "xr-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Server for Extreme Results clients",
+  "main": "app.js",
   "scripts": {
     "start": "gulp",
     "test": "jasmine JASMINE_CONFIG_PATH=./jasmine.json",
     "it": "gulp it"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Gjermund Bjaanes",
+  "license": "MIT",
   "dependencies": {
     "body-parser": "1.15.0",
     "cors": "2.7.1",
     "express": "4.13.4",
-    "gulp": "3.9.1",
-    "gulp-nodemon": "2.0.6",
-    "jasmine": "2.4.1",
     "jwt-simple": "0.5.0",
     "moment": "2.11.2",
     "mongoose": "4.4.3",
@@ -30,6 +27,10 @@
     "gulp-mocha": "2.2.0",
     "node-inspector": "0.12.7",
     "should": "8.2.2",
-    "supertest": "1.2.0"
+    "supertest": "1.2.0",
+    "gulp-istanbul": "^0.10.4",
+    "gulp-nodemon": "2.0.6",
+    "jasmine": "2.4.1",
+    "gulp": "3.9.1"
   }
 }

@@ -61,7 +61,7 @@ describe("Active Entries Controller", function() {
                         effectiveDate: new Date()
                     }
                 ];
-                spyOn(OutcomeMock, 'find').and.callFake(function (query, callback) {
+                spyOn(OutcomeMock, 'find').and.callFake(function (query, a, b, callback) {
                     callback(undefined, results);
                 });
                 spyOn(responseMock, 'json');
@@ -89,7 +89,7 @@ describe("Active Entries Controller", function() {
 
             it('should return 500 if finding outcomes fails', function () {
                 var error = 'error';
-                spyOn(OutcomeMock, 'find').and.callFake(function (query, callback) {
+                spyOn(OutcomeMock, 'find').and.callFake(function (query, a, b, callback) {
                     callback(error, undefined);
                 });
                 spyOn(responseMock, 'status').and.callThrough();
