@@ -157,6 +157,30 @@ describe('Related ITs', function () {
                         })
                 });
 
+                it('should get back this months outcome', function (done) {
+                    var thisMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Monthly Story',
+                        secondStory: 'The Second Monthly Story',
+                        thirdStory: 'The Third Monthly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(thisMonthsOutcome)
+                        .end(function (err, postOutcomeResults) {
+                            agent.get('/api/related/outcomes?typeName=Daily')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200)
+                                .end(function (err, results) {
+                                    results.body.length.should.be.exactly(1);
+                                    results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
+                                    done();
+                                })
+                        })
+                });
+
                 it('should get back all related entries', function (done) {
                     var currentWeeklyOutcome = {
                         typeName: 'Weekly',
@@ -175,6 +199,14 @@ describe('Related ITs', function () {
                         effectiveDate: yesterday.toDate()
                     };
 
+                    var thisMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Monthly Story',
+                        secondStory: 'The Second Monthly Story',
+                        thirdStory: 'The Third Monthly Story',
+                        effectiveDate: new Date()
+                    };
+
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
@@ -183,14 +215,21 @@ describe('Related ITs', function () {
                                 .set('Authorization', 'bearer ' + token)
                                 .send(yesterdaysOutcome)
                                 .end(function (err, yesterdaysOutcomeResults) {
-                                    agent.get('/api/related/outcomes?typeName=Daily')
+                                    agent.post('/api/outcomes')
                                         .set('Authorization', 'bearer ' + token)
-                                        .expect(200)
-                                        .end(function (err, results) {
-                                            results.body.length.should.be.exactly(2);
-                                            results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
-                                            results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
-                                            done();
+                                        .send(thisMonthsOutcome)
+                                        .end(function (err, thisMonthsOutcomeResults) {
+                                            agent.get('/api/related/outcomes?typeName=Daily')
+                                                .set('Authorization', 'bearer ' + token)
+                                                .expect(200)
+                                                .end(function (err, results) {
+                                                    results.body.length.should.be.exactly(3);
+                                                    results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
+                                                    results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
+                                                    results.body[2].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
+                                                    done();
+                                                });
+
                                         });
                                 });
                         })
@@ -332,6 +371,31 @@ describe('Related ITs', function () {
                         });
                 });
 
+                it('should get back this months outcome', function (done) {
+                    var thisMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Monthly Story',
+                        secondStory: 'The Second Monthly Story',
+                        thirdStory: 'The Third Monthly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(thisMonthsOutcome)
+                        .end(function (err, postOutcomeResults) {
+                            agent.get('/api/related/outcomes?typeName=Weekly')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200)
+                                .end(function (err, results) {
+                                    results.body.length.should.be.exactly(1);
+                                    results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
+                                    done();
+                                })
+                        })
+                });
+
+
                 it('should get back all related entries', function (done) {
                     var lastWeek = moment().subtract(1, 'weeks');
                     var lastWeeksOutcome = {
@@ -339,6 +403,71 @@ describe('Related ITs', function () {
                         firstStory: 'The First Weekly Story',
                         secondStory: 'The Second Weekly Story',
                         thirdStory: 'The Third Weekly Story',
+                        effectiveDate: lastWeek.toDate()
+                    };
+
+                    var lastWeeksReflection = {
+                        typeName: 'Weekly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: lastWeek.toDate()
+                    };
+
+                    var thisMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Monthly Story',
+                        secondStory: 'The Second Monthly Story',
+                        thirdStory: 'The Third Monthly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(lastWeeksOutcome)
+                        .end(function (err, lastWeeksOutcomeResults) {
+                            agent.post('/api/reflections')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(lastWeeksReflection)
+                                .end(function (err, lastWeeksReflectionResults) {
+                                    agent.post('/api/outcomes')
+                                        .set('Authorization', 'bearer ' + token)
+                                        .send(thisMonthsOutcome)
+                                        .end(function (err, thisMonthsOutcomeResults) {
+                                            agent.get('/api/related/outcomes?typeName=Weekly')
+                                                .set('Authorization', 'bearer ' + token)
+                                                .expect(200)
+                                                .end(function (err, results) {
+                                                    results.body.length.should.be.exactly(3);
+                                                    results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                                    results.body[1].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
+                                                    results.body[2].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                                                    done();
+                                                });
+
+                                        });
+                                });
+                        });
+                });
+
+                it('should only get back related entries for the user', function (done) {
+                    var lastWeek = moment().subtract(1, 'weeks');
+                    var lastWeeksOutcome = {
+                        typeName: 'Weekly',
+                        firstStory: 'The First Weekly Story',
+                        secondStory: 'The Second Weekly Story',
+                        thirdStory: 'The Third Weekly Story',
+                        effectiveDate: lastWeek.toDate()
+                    };
+
+                    var otherUsersLastWeeksOutcome = {
+                        typeName: 'Weekly',
+                        firstStory: 'The First Other Users Weekly Story',
+                        secondStory: 'The Second Other Users Weekly Story',
+                        thirdStory: 'The Third Other Users Weekly Story',
                         effectiveDate: lastWeek.toDate()
                     };
 
@@ -361,19 +490,204 @@ describe('Related ITs', function () {
                                 .set('Authorization', 'bearer ' + token)
                                 .send(lastWeeksReflection)
                                 .end(function (err, lastWeeksReflectionResults) {
-                                    agent.get('/api/related/outcomes?typeName=Weekly')
+                                    agent.post('/api/outcomes')
+                                        .send(otherUsersLastWeeksOutcome)
+                                        .set('Authorization', 'bearer ' + otherUserToken)
+                                        .end(function () {
+                                            agent.get('/api/related/outcomes?typeName=Weekly')
+                                                .set('Authorization', 'bearer ' + token)
+                                                .expect(200)
+                                                .end(function (err, results) {
+                                                    results.body.length.should.be.exactly(2);
+                                                    results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                                    results.body[1].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                                                    done();
+                                                });
+                                        });
+                                });
+                        });
+                })
+            });
+
+            describe('Monthly', function () {
+                it('should get back the last monthly reflection', function (done) {
+                    var lastMonth = moment().subtract(1, 'months');
+                    var lastMonthsReflection = {
+                        typeName: 'Monthly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    agent.post('/api/reflections')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(lastMonthsReflection)
+                        .end(function (err, postReflectionResults) {
+                            agent.get('/api/related/outcomes?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200)
+                                .end(function (err, results) {
+                                    results.body.length.should.be.exactly(1);
+                                    results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
+                                    done();
+                                });
+                        })
+
+                });
+
+                it('should get back nothing if no last monthly reflection', function (done) {
+                    var notLastMonth = moment().subtract(2, 'months');
+                    var notLastMonthsReflection = {
+                        typeName: 'Monthly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: notLastMonth.toDate()
+                    };
+
+                    agent.post('/api/reflections')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(notLastMonthsReflection)
+                        .end(function () {
+                            agent.get('/api/related/outcomes?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200)
+                                .end(function (err, results) {
+                                    results.body.length.should.be.exactly(0);
+                                    done();
+                                });
+                        })
+                });
+
+                it('should get back last months monthly outcome', function (done) {
+                    var lastMonth = moment().subtract(1, 'months');
+                    var lastMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Weekly Story',
+                        secondStory: 'The Second Weekly Story',
+                        thirdStory: 'The Third Weekly Story',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(lastMonthsOutcome)
+                        .end(function (err, lastWeeksOutcomeResults) {
+                            agent.get('/api/related/outcomes?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200)
+                                .end(function (err, results) {
+                                    results.body.length.should.be.exactly(1);
+                                    results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                    done();
+                                });
+                        });
+                });
+
+                it('should get back all related entries', function (done) {
+                    var lastMonth = moment().subtract(1, 'months');
+                    var lastMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Weekly Story',
+                        secondStory: 'The Second Weekly Story',
+                        thirdStory: 'The Third Weekly Story',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    var lastMonthsReflection = {
+                        typeName: 'Monthly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(lastMonthsOutcome)
+                        .end(function (err, lastMonthsOutcomeResults) {
+                            agent.post('/api/reflections')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(lastMonthsReflection)
+                                .end(function (err, lastMonthReflectionResults) {
+                                    agent.get('/api/related/outcomes?typeName=Monthly')
                                         .set('Authorization', 'bearer ' + token)
                                         .expect(200)
                                         .end(function (err, results) {
                                             results.body.length.should.be.exactly(2);
-                                            results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
-                                            results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                            results.body[0].objectId.should.be.equal(lastMonthsOutcomeResults.body._id);
+                                            results.body[1].objectId.should.be.equal(lastMonthReflectionResults.body._id);
                                             done();
                                         });
                                 });
                         });
                 });
-            });
+
+                it('should only get back related entries for the user', function (done) {
+                    var lastMonth = moment().subtract(1, 'months');
+                    var lastWeeksOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Monthly Story',
+                        secondStory: 'The Second Monthly Story',
+                        thirdStory: 'The Third Monthly Story',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    var otherUsersLastMonthssOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Other Users Monthly Story',
+                        secondStory: 'The Second Other Users Monthly Story',
+                        thirdStory: 'The Third Other Users Monthly Story',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    var lastMonthsReflection = {
+                        typeName: 'Monthly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(lastWeeksOutcome)
+                        .end(function (err, lastMonthsOutcomeResults) {
+                            agent.post('/api/reflections')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(lastMonthsReflection)
+                                .end(function (err, lastMonthsReflectionResults) {
+                                    agent.post('/api/outcomes')
+                                        .send(otherUsersLastMonthssOutcome)
+                                        .set('Authorization', 'bearer ' + otherUserToken)
+                                        .end(function () {
+                                            agent.get('/api/related/outcomes?typeName=Monthly')
+                                                .set('Authorization', 'bearer ' + token)
+                                                .expect(200)
+                                                .end(function (err, results) {
+                                                    results.body.length.should.be.exactly(2);
+                                                    results.body[0].objectId.should.be.equal(lastMonthsOutcomeResults.body._id);
+                                                    results.body[1].objectId.should.be.equal(lastMonthsReflectionResults.body._id);
+                                                    done();
+                                                });
+                                        });
+                                });
+                        });
+                })
+            })
         });
 
         describe('/reflections', function () {
@@ -573,7 +887,7 @@ describe('Related ITs', function () {
                 });
 
                 describe('effectiveDate param', function () {
-                    it('should get back based on effectiveDate sent in', function () {
+                    it('should get back based on effectiveDate sent in', function (done) {
                         var lastWeek = moment().subtract(1, 'weeks');
                         var twoWeeksAgo = moment().subtract(2, 'weeks');
                         var lastWeeksOutcome = {
@@ -604,6 +918,235 @@ describe('Related ITs', function () {
                                     .send(twoWeeksAgoReflection)
                                     .end(function (err, twoWeeksAgoReflectionResults) {
                                         agent.get('/api/related/reflections?typeName=Weekly&effectiveDate=' + encodeURI(lastWeek.toDate()))
+                                            .set('Authorization', 'bearer ' + token)
+                                            .send()
+                                            .expect(200)
+                                            .end(function (err, results) {
+                                                results.body.length.should.be.exactly(2);
+                                                results.body[0].objectId.should.be.equal(twoWeeksAgoReflectionResults.body._id);
+                                                results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                                done();
+                                            });
+                                    });
+                            });
+                    });
+                });
+            });
+
+            describe('Monthly', function () {
+                it('should get back the last monthly reflection', function (done) {
+                    var lastMonth = moment().subtract(1, 'months');
+                    var lastMonthsReflection = {
+                        typeName: 'Monthly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    agent.post('/api/reflections')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(lastMonthsReflection)
+                        .end(function (err, postReflectionResults) {
+                            agent.get('/api/related/reflections?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .send()
+                                .expect(200)
+                                .end(function (err, results) {
+                                    results.body.length.should.be.exactly(1);
+                                    results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
+                                    done();
+                                });
+                        })
+
+                });
+
+                it('should get back nothing if no last monthly reflection', function (done) {
+                    var notLastMonth = moment().subtract(2, 'months');
+                    var notLastMonthsReflection = {
+                        typeName: 'Monthly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: notLastMonth.toDate()
+                    };
+
+                    agent.post('/api/reflections')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(notLastMonthsReflection)
+                        .end(function () {
+                            agent.get('/api/related/reflections?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200)
+                                .end(function (err, results) {
+                                    results.body.length.should.be.exactly(0);
+                                    done();
+                                });
+                        })
+                });
+
+                it('should get back current monthly outcome', function (done) {
+                    var thisMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Weekly Story',
+                        secondStory: 'The Second Weekly Story',
+                        thirdStory: 'The Third Weekly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(thisMonthsOutcome)
+                        .end(function (err, thisWeeksOutcomeResults) {
+                            agent.get('/api/related/reflections?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .send()
+                                .expect(200)
+                                .end(function (err, results) {
+                                    results.body.length.should.be.exactly(1);
+                                    results.body[0].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
+                                    done();
+                                });
+                        });
+                });
+
+                it('should get back all related entries', function (done) {
+                    var lastMonth = moment().subtract(1, 'months');
+                    var thisMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Monthly Story',
+                        secondStory: 'The Second Monthly Story',
+                        thirdStory: 'The Third Monthly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    var lastMonthsReflection = {
+                        typeName: 'Monthly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(thisMonthsOutcome)
+                        .end(function (err, thisMonthsOutcomeResults) {
+                            agent.post('/api/reflections')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(lastMonthsReflection)
+                                .end(function (err, lastMonthsReflectionResults) {
+                                    agent.get('/api/related/reflections?typeName=Monthly')
+                                        .set('Authorization', 'bearer ' + token)
+                                        .send()
+                                        .expect(200)
+                                        .end(function (err, results) {
+                                            results.body.length.should.be.exactly(2);
+                                            results.body[0].objectId.should.be.equal(lastMonthsReflectionResults.body._id);
+                                            results.body[1].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
+                                            done();
+                                        });
+                                });
+                        });
+                });
+
+                it('should only get back related entries for the user', function (done) {
+                    var lastMonth = moment().subtract(1, 'months');
+                    var thisMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Weekly Story',
+                        secondStory: 'The Second Weekly Story',
+                        thirdStory: 'The Third Weekly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    var otherUsersMonthsOutcome = {
+                        typeName: 'Monthly',
+                        firstStory: 'The First Other Users Weekly Story',
+                        secondStory: 'The Second Other Users Weekly Story',
+                        thirdStory: 'The Third Other Users Weekly Story',
+                        effectiveDate: new Date()
+                    };
+
+                    var lastMonthReflection = {
+                        typeName: 'Monthly',
+                        firstThingThatWentWell: 'The First Thing That Went Well',
+                        secondThingThatWentWell: 'The Second Thing That Went Well',
+                        thirdThingThatWentWell: 'The Third Thing That Went Well',
+                        firstThingToImprove: 'The First Thing To Improve',
+                        secondThingToImprove: 'The Second Thing To Improve',
+                        thirdThingToImprove: 'The Third Thing To Improve',
+                        effectiveDate: lastMonth.toDate()
+                    };
+
+                    agent.post('/api/outcomes')
+                        .set('Authorization', 'bearer ' + token)
+                        .send(thisMonthsOutcome)
+                        .end(function (err, thisWeeksOutcomeResults) {
+                            agent.post('/api/reflections')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(lastMonthReflection)
+                                .end(function (err, lastWeeksReflectionResults) {
+                                    agent.post('/api/outcomes')
+                                        .set('Authorization', 'bearer ' + otherUserToken)
+                                        .send(otherUsersMonthsOutcome)
+                                        .end(function () {
+                                            agent.get('/api/related/reflections?typeName=Monthly')
+                                                .set('Authorization', 'bearer ' + token)
+                                                .send()
+                                                .expect(200)
+                                                .end(function (err, results) {
+                                                    results.body.length.should.be.exactly(2);
+                                                    results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                                                    results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
+                                                    done();
+                                                });
+                                        });
+                                });
+                        });
+                });
+
+                describe('effectiveDate param', function () {
+                    it('should get back based on effectiveDate sent in', function (done) {
+                        var lastMonth = moment().subtract(1, 'months');
+                        var twoMonthsAgo = moment().subtract(2, 'months');
+                        var lastMonthsOutcome = {
+                            typeName: 'Monthly',
+                            firstStory: 'The First Weekly Story',
+                            secondStory: 'The Second Weekly Story',
+                            thirdStory: 'The Third Weekly Story',
+                            effectiveDate: lastMonth.toDate()
+                        };
+
+                        var twoMonthsAgoReflection = {
+                            typeName: 'Monthly',
+                            firstThingThatWentWell: 'The First Thing That Went Well',
+                            secondThingThatWentWell: 'The Second Thing That Went Well',
+                            thirdThingThatWentWell: 'The Third Thing That Went Well',
+                            firstThingToImprove: 'The First Thing To Improve',
+                            secondThingToImprove: 'The Second Thing To Improve',
+                            thirdThingToImprove: 'The Third Thing To Improve',
+                            effectiveDate: twoMonthsAgo.toDate()
+                        };
+
+                        agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
+                            .send(lastMonthsOutcome)
+                            .end(function (err, lastWeeksOutcomeResults) {
+                                agent.post('/api/reflections')
+                                    .set('Authorization', 'bearer ' + token)
+                                    .send(twoMonthsAgoReflection)
+                                    .end(function (err, twoWeeksAgoReflectionResults) {
+                                        agent.get('/api/related/reflections?typeName=Monthly&effectiveDate=' + encodeURI(lastMonth.toDate()))
                                             .set('Authorization', 'bearer ' + token)
                                             .send()
                                             .expect(200)

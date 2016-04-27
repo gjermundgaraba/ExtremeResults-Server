@@ -83,6 +83,14 @@ describe('Outcome ITs', function () {
                     effectiveDate: new Date()
                 };
 
+                var activeMonthlyOutcome = {
+                    typeName: 'Monthly',
+                    firstStory: 'The First Story',
+                    secondStory: 'The Second Story',
+                    thirdStory: 'The Third Story',
+                    effectiveDate: new Date()
+                };
+
                 agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
@@ -91,16 +99,23 @@ describe('Outcome ITs', function () {
                             .set('Authorization', 'bearer ' + token)
                             .send(activeWeeklyOutcome)
                             .end(function (err, weeklyResults) {
-                                agent.get('/api/activeEntries')
+                                agent.post('/api/outcomes')
                                     .set('Authorization', 'bearer ' + token)
-                                    .send()
-                                    .expect(200)
-                                    .end(function (err, results) {
-                                        results.body.length.should.be.exactly(2);
-                                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
-                                        results.body[1].objectId.should.be.equal(weeklyResults.body._id);
-                                        done();
+                                    .send(activeMonthlyOutcome)
+                                    .end(function (err, monthlyResults) {
+                                        agent.get('/api/activeEntries')
+                                            .set('Authorization', 'bearer ' + token)
+                                            .send()
+                                            .expect(200)
+                                            .end(function (err, results) {
+                                                results.body.length.should.be.exactly(3);
+                                                results.body[0].objectId.should.be.equal(dailyResults.body._id);
+                                                results.body[1].objectId.should.be.equal(weeklyResults.body._id);
+                                                results.body[2].objectId.should.be.equal(monthlyResults.body._id);
+                                                done();
+                                            });
                                     });
+
                             });
                     });
             });
@@ -221,6 +236,45 @@ describe('Outcome ITs', function () {
                     });
             });
 
+            it('should only get this months outcome if that is what is there', function (done) {
+                var yesterday = moment().subtract(1, 'days');
+                var activeDailyOutcome = {
+                    typeName: 'Daily',
+                    firstStory: 'The First Story',
+                    secondStory: 'The Second Story',
+                    thirdStory: 'The Third Story',
+                    effectiveDate: yesterday.toDate()
+                };
+
+                var activeMonthlyOutcome = {
+                    typeName: 'Monthly',
+                    firstStory: 'The First Story',
+                    secondStory: 'The Second Story',
+                    thirdStory: 'The Third Story',
+                    effectiveDate: new Date()
+                };
+
+                agent.post('/api/outcomes')
+                    .set('Authorization', 'bearer ' + token)
+                    .send(activeDailyOutcome)
+                    .end(function () {
+                        agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
+                            .send(activeMonthlyOutcome)
+                            .end(function (err, monthlyResults) {
+                                agent.get('/api/activeEntries')
+                                    .set('Authorization', 'bearer ' + token)
+                                    .send()
+                                    .expect(200)
+                                    .end(function (err, results) {
+                                        results.body.length.should.be.exactly(1);
+                                        results.body[0].objectId.should.be.equal(monthlyResults.body._id);
+                                        done();
+                                    });
+                            });
+                    });
+            });
+
             it('should get nothing if there are no active entires', function (done) {
                 var yesterday = moment().subtract(1, 'days');
                 var activeDailyOutcome = {
@@ -240,6 +294,15 @@ describe('Outcome ITs', function () {
                     effectiveDate: lastWeek.toDate()
                 };
 
+                var lastMonth = moment().subtract(1, 'months');
+                var activeMonthlyOutcome = {
+                    typeName: 'Monthly',
+                    firstStory: 'The First Story',
+                    secondStory: 'The Second Story',
+                    thirdStory: 'The Third Story',
+                    effectiveDate: lastMonth.toDate()
+                };
+
                 agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
@@ -248,13 +311,18 @@ describe('Outcome ITs', function () {
                             .set('Authorization', 'bearer ' + token)
                             .send(activeWeeklyOutcome)
                             .end(function () {
-                                agent.get('/api/activeEntries')
+                                agent.post('/api/outcomes')
                                     .set('Authorization', 'bearer ' + token)
-                                    .send()
-                                    .expect(200)
-                                    .end(function (err, results) {
-                                        results.body.length.should.be.exactly(0);
-                                        done();
+                                    .send(activeMonthlyOutcome)
+                                    .end(function () {
+                                        agent.get('/api/activeEntries')
+                                            .set('Authorization', 'bearer ' + token)
+                                            .send()
+                                            .expect(200)
+                                            .end(function (err, results) {
+                                                results.body.length.should.be.exactly(0);
+                                                done();
+                                            });
                                     });
                             });
                     });

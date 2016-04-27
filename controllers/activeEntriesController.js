@@ -5,6 +5,8 @@ var activeEntriesController = function (Outcome, moment) {
         var endOfToday = moment().endOf('day');
         var startOfWeek = moment().startOf('isoWeek');
         var endOfWeek = moment().endOf('isoWeek');
+        var startOfMonth = moment().startOf('month');
+        var endOfMonth = moment().endOf('month');
 
         var query = {
             $or: [
@@ -22,6 +24,14 @@ var activeEntriesController = function (Outcome, moment) {
                     effectiveDate: {
                         $gte: startOfWeek.toDate(),
                         $lt: endOfWeek.toDate()
+                    }
+                },
+                {
+                    user: req.user._id,
+                    typeName: 'Monthly',
+                    effectiveDate: {
+                        $gte: startOfMonth.toDate(),
+                        $lt: endOfMonth.toDate()
                     }
                 }
             ]

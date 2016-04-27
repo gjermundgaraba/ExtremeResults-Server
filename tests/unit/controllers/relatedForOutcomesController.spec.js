@@ -80,6 +80,59 @@ describe("Related For Outcomes Controller", function() {
 
             });
 
+            it('should work for Monthly', function () {
+                spyOn(responseMock, 'json').and.callThrough();
+                var resultsForReflections = [{
+                    typeName: 'Monthly',
+                    firstThingThatWentWell: 'The First Thing That Went Well',
+                    secondThingThatWentWell: 'The Second Thing That Went Well',
+                    thirdThingThatWentWell: 'The Third Thing That Went Well',
+                    firstThingToImprove: 'The First Thing To Improve',
+                    secondThingToImprove: 'The Second Thing To Improve',
+                    thirdThingToImprove: 'The Third Thing To Improve',
+                    effectiveDate: new Date()
+                }];
+                var resultsForOutcomes = [{
+                    typeName: 'Monthly',
+                    firstStory: 'The First Weekly Story',
+                    secondStory: 'The Second Weekly Story',
+                    thirdStory: 'The Third Weekly Story',
+                    effectiveDate: new Date()
+                }];
+                spyOn(ReflectionMock, 'find').and.callFake(function (query, callback) {
+                    callback(undefined, resultsForReflections);
+                });
+                spyOn(OutcomeMock, 'find').and.callFake(function (query, callback) {
+                    callback(undefined, resultsForOutcomes);
+                });
+
+
+                requestMock.query.typeName = 'Monthly';
+
+                relatedForOutcomesController.get(requestMock, responseMock);
+
+                var firstRelated = responseMock.json.calls.mostRecent().args[0][0];
+                expect(firstRelated.objectId).toEqual(resultsForOutcomes[0]._id);
+                expect(firstRelated.typeName).toEqual(resultsForOutcomes[0].typeName);
+                expect(firstRelated.firstStory).toEqual(resultsForOutcomes[0].firstStory);
+                expect(firstRelated.secondStory).toEqual(resultsForOutcomes[0].secondStory);
+                expect(firstRelated.thirdStory).toEqual(resultsForOutcomes[0].thirdStory);
+                expect(firstRelated.effectiveDate).toEqual(resultsForOutcomes[0].effectiveDate);
+                expect(firstRelated.className).toEqual('Outcome');
+
+                var secondRelated = responseMock.json.calls.mostRecent().args[0][1];
+                expect(secondRelated.objectId).toEqual(resultsForReflections[0]._id);
+                expect(secondRelated.typeName).toEqual(resultsForReflections[0].typeName);
+                expect(secondRelated.firstThingThatWentWell).toEqual(resultsForReflections[0].firstThingThatWentWell);
+                expect(secondRelated.secondThingThatWentWell).toEqual(resultsForReflections[0].secondThingThatWentWell);
+                expect(secondRelated.thirdThingThatWentWell).toEqual(resultsForReflections[0].thirdThingThatWentWell);
+                expect(secondRelated.firstThingToImprove).toEqual(resultsForReflections[0].firstThingToImprove);
+                expect(secondRelated.secondThingToImprove).toEqual(resultsForReflections[0].secondThingToImprove);
+                expect(secondRelated.thirdThingToImprove).toEqual(resultsForReflections[0].thirdThingToImprove);
+                expect(secondRelated.effectiveDate).toEqual(resultsForReflections[0].effectiveDate);
+                expect(secondRelated.className).toEqual('Reflection');
+            });
+
             it('should work for Weekly', function () {
                 spyOn(responseMock, 'json').and.callThrough();
                 var resultsForReflections = [{
@@ -112,26 +165,27 @@ describe("Related For Outcomes Controller", function() {
                 relatedForOutcomesController.get(requestMock, responseMock);
 
                 var firstRelated = responseMock.json.calls.mostRecent().args[0][0];
-                expect(firstRelated.objectId).toEqual(resultsForReflections[0]._id);
-                expect(firstRelated.typeName).toEqual(resultsForReflections[0].typeName);
-                expect(firstRelated.firstThingThatWentWell).toEqual(resultsForReflections[0].firstThingThatWentWell);
-                expect(firstRelated.secondThingThatWentWell).toEqual(resultsForReflections[0].secondThingThatWentWell);
-                expect(firstRelated.thirdThingThatWentWell).toEqual(resultsForReflections[0].thirdThingThatWentWell);
-                expect(firstRelated.firstThingToImprove).toEqual(resultsForReflections[0].firstThingToImprove);
-                expect(firstRelated.secondThingToImprove).toEqual(resultsForReflections[0].secondThingToImprove);
-                expect(firstRelated.thirdThingToImprove).toEqual(resultsForReflections[0].thirdThingToImprove);
-                expect(firstRelated.effectiveDate).toEqual(resultsForReflections[0].effectiveDate);
-                expect(firstRelated.className).toEqual('Reflection');
+                expect(firstRelated.objectId).toEqual(resultsForOutcomes[0]._id);
+                expect(firstRelated.typeName).toEqual(resultsForOutcomes[0].typeName);
+                expect(firstRelated.firstStory).toEqual(resultsForOutcomes[0].firstStory);
+                expect(firstRelated.secondStory).toEqual(resultsForOutcomes[0].secondStory);
+                expect(firstRelated.thirdStory).toEqual(resultsForOutcomes[0].thirdStory);
+                expect(firstRelated.effectiveDate).toEqual(resultsForOutcomes[0].effectiveDate);
+                expect(firstRelated.className).toEqual('Outcome');
 
                 var secondRelated = responseMock.json.calls.mostRecent().args[0][1];
-                expect(secondRelated.objectId).toEqual(resultsForOutcomes[0]._id);
-                expect(secondRelated.typeName).toEqual(resultsForOutcomes[0].typeName);
-                expect(secondRelated.firstStory).toEqual(resultsForOutcomes[0].firstStory);
-                expect(secondRelated.secondStory).toEqual(resultsForOutcomes[0].secondStory);
-                expect(secondRelated.thirdStory).toEqual(resultsForOutcomes[0].thirdStory);
-                expect(secondRelated.effectiveDate).toEqual(resultsForOutcomes[0].effectiveDate);
-                expect(secondRelated.className).toEqual('Outcome');
+                expect(secondRelated.objectId).toEqual(resultsForReflections[0]._id);
+                expect(secondRelated.typeName).toEqual(resultsForReflections[0].typeName);
+                expect(secondRelated.firstThingThatWentWell).toEqual(resultsForReflections[0].firstThingThatWentWell);
+                expect(secondRelated.secondThingThatWentWell).toEqual(resultsForReflections[0].secondThingThatWentWell);
+                expect(secondRelated.thirdThingThatWentWell).toEqual(resultsForReflections[0].thirdThingThatWentWell);
+                expect(secondRelated.firstThingToImprove).toEqual(resultsForReflections[0].firstThingToImprove);
+                expect(secondRelated.secondThingToImprove).toEqual(resultsForReflections[0].secondThingToImprove);
+                expect(secondRelated.thirdThingToImprove).toEqual(resultsForReflections[0].thirdThingToImprove);
+                expect(secondRelated.effectiveDate).toEqual(resultsForReflections[0].effectiveDate);
+                expect(secondRelated.className).toEqual('Reflection');
             });
+
 
             it('should send 400 if typeName is not supported', function () {
                 spyOn(responseMock, 'status').and.callThrough();

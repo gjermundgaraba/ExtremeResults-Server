@@ -104,6 +104,59 @@ describe("Related For Reflections Controller", function() {
                 expect(secondRelated.className).toEqual('Outcome');
             });
 
+            it('should work for Monthly', function () {
+                spyOn(responseMock, 'json').and.callThrough();
+                var resultsForReflections = [{
+                    typeName: 'Monthly',
+                    firstThingThatWentWell: 'The First Thing That Went Well',
+                    secondThingThatWentWell: 'The Second Thing That Went Well',
+                    thirdThingThatWentWell: 'The Third Thing That Went Well',
+                    firstThingToImprove: 'The First Thing To Improve',
+                    secondThingToImprove: 'The Second Thing To Improve',
+                    thirdThingToImprove: 'The Third Thing To Improve',
+                    effectiveDate: new Date()
+                }];
+                var resultsForOutcomes = [{
+                    typeName: 'Monthly',
+                    firstStory: 'The First Monthly Story',
+                    secondStory: 'The Second Monthly Story',
+                    thirdStory: 'The Third Monthly Story',
+                    effectiveDate: new Date()
+                }];
+                spyOn(ReflectionMock, 'find').and.callFake(function (query, callback) {
+                    callback(undefined, resultsForReflections);
+                });
+                spyOn(OutcomeMock, 'find').and.callFake(function (query, callback) {
+                    callback(undefined, resultsForOutcomes);
+                });
+
+
+                requestMock.query.typeName = 'Monthly';
+
+                relatedForOutcomesController.get(requestMock, responseMock);
+
+                var firstRelated = responseMock.json.calls.mostRecent().args[0][0];
+                expect(firstRelated.objectId).toEqual(resultsForReflections[0]._id);
+                expect(firstRelated.typeName).toEqual(resultsForReflections[0].typeName);
+                expect(firstRelated.firstThingThatWentWell).toEqual(resultsForReflections[0].firstThingThatWentWell);
+                expect(firstRelated.secondThingThatWentWell).toEqual(resultsForReflections[0].secondThingThatWentWell);
+                expect(firstRelated.thirdThingThatWentWell).toEqual(resultsForReflections[0].thirdThingThatWentWell);
+                expect(firstRelated.firstThingToImprove).toEqual(resultsForReflections[0].firstThingToImprove);
+                expect(firstRelated.secondThingToImprove).toEqual(resultsForReflections[0].secondThingToImprove);
+                expect(firstRelated.thirdThingToImprove).toEqual(resultsForReflections[0].thirdThingToImprove);
+                expect(firstRelated.effectiveDate).toEqual(resultsForReflections[0].effectiveDate);
+                expect(firstRelated.className).toEqual('Reflection');
+
+                var secondRelated = responseMock.json.calls.mostRecent().args[0][1];
+                expect(secondRelated.objectId).toEqual(resultsForOutcomes[0]._id);
+                expect(secondRelated.typeName).toEqual(resultsForOutcomes[0].typeName);
+                expect(secondRelated.firstStory).toEqual(resultsForOutcomes[0].firstStory);
+                expect(secondRelated.secondStory).toEqual(resultsForOutcomes[0].secondStory);
+                expect(secondRelated.thirdStory).toEqual(resultsForOutcomes[0].thirdStory);
+                expect(secondRelated.effectiveDate).toEqual(resultsForOutcomes[0].effectiveDate);
+                expect(secondRelated.className).toEqual('Outcome');
+            });
+
             it('should use effectiveDate param if present', function () {
                 var effectiveDate = new Date();
 
@@ -156,6 +209,42 @@ describe("Related For Reflections Controller", function() {
                 spyOn(responseMock, 'send').and.callThrough();
 
                 requestMock.query.typeName = 'Weekly';
+
+                relatedForOutcomesController.get(requestMock, responseMock);
+
+                expect(responseMock.status).toHaveBeenCalledWith(500);
+                expect(responseMock.send).toHaveBeenCalledWith(error);
+            });
+
+            it('should send back 500 if Outcome search goes wrong with Monthly', function () {
+                var error = 'This is an error';
+                var resultsForOutcomes = [{testses: 'test1232'}];
+                spyOn(ReflectionMock, 'find').and.callFake(function (query, callback) {
+                    callback(error, resultsForOutcomes);
+                });
+                spyOn(OutcomeMock, 'find').and.callFake(function (query, callback) {
+                    callback(error, undefined);
+                });
+                spyOn(responseMock, 'status').and.callThrough();
+                spyOn(responseMock, 'send').and.callThrough();
+
+                requestMock.query.typeName = 'Monthly';
+
+                relatedForOutcomesController.get(requestMock, responseMock);
+
+                expect(responseMock.status).toHaveBeenCalledWith(500);
+                expect(responseMock.send).toHaveBeenCalledWith(error);
+            });
+
+            it('should send back 500 if Reflection search goes wrong with Monthly', function () {
+                var error = 'This is an error';
+                spyOn(ReflectionMock, 'find').and.callFake(function (query, callback) {
+                    callback(error, undefined);
+                });
+                spyOn(responseMock, 'status').and.callThrough();
+                spyOn(responseMock, 'send').and.callThrough();
+
+                requestMock.query.typeName = 'Monthly';
 
                 relatedForOutcomesController.get(requestMock, responseMock);
 
