@@ -23,7 +23,11 @@ var routes = function (Outcome, Reflection, HotSpotBucket, User) {
                     return user.save();
                 })
                 .then(function () {
-                     res.status(204);
+                     res.status(204).send();
+                })
+                .catch(function (e) {
+                    console.log('something went wrong here ' + e.message);
+                    res.status(500).send();
                 });
         });
 
