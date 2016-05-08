@@ -1,5 +1,5 @@
 var should = require('should'),
-    request = require('supertest'),
+    request = require('supertest-as-promised'),
     moment = require('moment'),
     server,
     mongoose = require('mongoose'),
@@ -43,15 +43,15 @@ describe('Related ITs', function () {
 
         agent.post('/api/login')
             .send(itUser)
-            .end(function (err, results) {
+            .then(function (results) {
                 token = results.body.token;
 
-                agent.post('/api/login')
-                    .send(otherItUser)
-                    .end(function (err, results) {
-                        otherUserToken = results.body.token;
-                        done();
-                    });
+                return agent.post('/api/login')
+                    .send(otherItUser);
+            })
+            .then(function (results) {
+                otherUserToken = results.body.token;
+                done();
             });
     });
 
@@ -93,18 +93,20 @@ describe('Related ITs', function () {
                         effectiveDate: new Date()
                     };
 
+                    var postOutcomeResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
-                        .end(function (err, postOutcomeResults) {
-                            agent.get('/api/related/outcomes?typeName=Daily')
+                        .then(function (results) {
+                            postOutcomeResults = results;
+                            return agent.get('/api/related/outcomes?typeName=Daily')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
-                                    done();
-                                });
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
+                            done();
                         });
                 });
 
@@ -121,14 +123,14 @@ describe('Related ITs', function () {
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
-                        .end(function () {
-                            agent.get('/api/related/outcomes?typeName=Daily')
+                        .then(function () {
+                            return agent.get('/api/related/outcomes?typeName=Daily')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(0);
-                                    done();
-                                });
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(0);
+                            done();
                         });
                 });
 
@@ -142,19 +144,22 @@ describe('Related ITs', function () {
                         effectiveDate: yesterday.toDate()
                     };
 
+                    var postOutcomeResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(yesterdaysOutcome)
-                        .end(function (err, postOutcomeResults) {
-                            agent.get('/api/related/outcomes?typeName=Daily')
+                        .then(function (results) {
+                            postOutcomeResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Daily')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
-                                    done();
-                                })
+                                .expect(200);
                         })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
+                            done();
+                        });
                 });
 
                 it('should get back this months outcome', function (done) {
@@ -166,19 +171,22 @@ describe('Related ITs', function () {
                         effectiveDate: new Date()
                     };
 
+                    var postOutcomeResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
-                        .end(function (err, postOutcomeResults) {
-                            agent.get('/api/related/outcomes?typeName=Daily')
+                        .then(function (results) {
+                            postOutcomeResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Daily')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
-                                    done();
-                                })
+                                .expect(200);
                         })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
+                            done();
+                        });
                 });
 
                 it('should get back all related entries', function (done) {
@@ -207,32 +215,40 @@ describe('Related ITs', function () {
                         effectiveDate: new Date()
                     };
 
+                    var postWeeklyOutcomeResults;
+                    var yesterdaysOutcomeResults;
+                    var thisMonthsOutcomeResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
-                        .end(function (err, postWeeklyOutcomeResults) {
-                            agent.post('/api/outcomes')
-                                .set('Authorization', 'bearer ' + token)
-                                .send(yesterdaysOutcome)
-                                .end(function (err, yesterdaysOutcomeResults) {
-                                    agent.post('/api/outcomes')
-                                        .set('Authorization', 'bearer ' + token)
-                                        .send(thisMonthsOutcome)
-                                        .end(function (err, thisMonthsOutcomeResults) {
-                                            agent.get('/api/related/outcomes?typeName=Daily')
-                                                .set('Authorization', 'bearer ' + token)
-                                                .expect(200)
-                                                .end(function (err, results) {
-                                                    results.body.length.should.be.exactly(3);
-                                                    results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
-                                                    results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
-                                                    results.body[2].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
-                                                    done();
-                                                });
+                        .then(function (results) {
+                            postWeeklyOutcomeResults = results;
 
-                                        });
-                                });
+                            return agent.post('/api/outcomes')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(yesterdaysOutcome);
                         })
+                        .then(function (results) {
+                            yesterdaysOutcomeResults = results;
+
+                            return agent.post('/api/outcomes')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(thisMonthsOutcome);
+                        })
+                        .then(function (results) {
+                            thisMonthsOutcomeResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Daily')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(3);
+                            results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
+                            results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
+                            results.body[2].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
+                            done();
+                        });
 
                 });
 
@@ -262,29 +278,36 @@ describe('Related ITs', function () {
                         effectiveDate: yesterday.toDate()
                     };
 
+                    var postWeeklyOutcomeResults;
+                    var yesterdaysOutcomeResults;
+
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
-                        .end(function (err, postWeeklyOutcomeResults) {
-                            agent.post('/api/outcomes')
+                        .then(function (results) {
+                            postWeeklyOutcomeResults = results;
+
+                            return agent.post('/api/outcomes')
                                 .set('Authorization', 'bearer ' + token)
-                                .send(yesterdaysOutcome)
-                                .end(function (err, yesterdaysOutcomeResults) {
-                                    agent.post('/api/outcomes')
-                                        .set('Authorization', 'bearer ' + otherUserToken)
-                                        .send(otherUsersCurrentWeeklyOutcome)
-                                        .end(function () {
-                                            agent.get('/api/related/outcomes?typeName=Daily')
-                                                .set('Authorization', 'bearer ' + token)
-                                                .expect(200)
-                                                .end(function (err, results) {
-                                                    results.body.length.should.be.exactly(2);
-                                                    results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
-                                                    results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
-                                                    done();
-                                                });
-                                        });
-                                });
+                                .send(yesterdaysOutcome);
+                        })
+                        .then(function (results) {
+                            yesterdaysOutcomeResults = results;
+
+                            return agent.post('/api/outcomes')
+                                .set('Authorization', 'bearer ' + otherUserToken)
+                                .send(otherUsersCurrentWeeklyOutcome);
+                        })
+                        .then(function () {
+                            return agent.get('/api/related/outcomes?typeName=Daily')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(2);
+                            results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
+                            results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
+                            done();
                         })
                 });
             });
@@ -303,19 +326,22 @@ describe('Related ITs', function () {
                         effectiveDate: lastWeek.toDate()
                     };
 
+                    var postReflectionResults;
                     agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksReflection)
-                        .end(function (err, postReflectionResults) {
-                            agent.get('/api/related/outcomes?typeName=Weekly')
+                        .then(function (results) {
+                            postReflectionResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Weekly')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
-                                    done();
-                                });
+                                .expect(200);
                         })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
+                            done();
+                        });
 
                 });
 
@@ -335,15 +361,15 @@ describe('Related ITs', function () {
                     agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(notLastWeeksReflection)
-                        .end(function () {
-                            agent.get('/api/related/outcomes?typeName=Weekly')
+                        .then(function () {
+                            return agent.get('/api/related/outcomes?typeName=Weekly')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(0);
-                                    done();
-                                });
+                                .expect(200);
                         })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(0);
+                            done();
+                        });
                 });
 
                 it('should get back last weeks weekly outcome', function (done) {
@@ -356,18 +382,21 @@ describe('Related ITs', function () {
                         effectiveDate: lastWeek.toDate()
                     };
 
+                    var lastWeeksOutcomeResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
-                        .end(function (err, lastWeeksOutcomeResults) {
-                            agent.get('/api/related/outcomes?typeName=Weekly')
+                        .then(function (results) {
+                            lastWeeksOutcomeResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Weekly')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                                    done();
-                                });
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                            done();
                         });
                 });
 
@@ -380,19 +409,22 @@ describe('Related ITs', function () {
                         effectiveDate: new Date()
                     };
 
+                    var postOutcomeResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
-                        .end(function (err, postOutcomeResults) {
-                            agent.get('/api/related/outcomes?typeName=Weekly')
+                        .then(function (results) {
+                            postOutcomeResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Weekly')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
-                                    done();
-                                })
+                                .expect(200);
                         })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
+                            done();
+                        });
                 });
 
 
@@ -425,31 +457,41 @@ describe('Related ITs', function () {
                         effectiveDate: new Date()
                     };
 
+
+                    var lastWeeksOutcomeResults;
+                    var lastWeeksReflectionResults;
+                    var thisMonthsOutcomeResults;
+
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
-                        .end(function (err, lastWeeksOutcomeResults) {
-                            agent.post('/api/reflections')
-                                .set('Authorization', 'bearer ' + token)
-                                .send(lastWeeksReflection)
-                                .end(function (err, lastWeeksReflectionResults) {
-                                    agent.post('/api/outcomes')
-                                        .set('Authorization', 'bearer ' + token)
-                                        .send(thisMonthsOutcome)
-                                        .end(function (err, thisMonthsOutcomeResults) {
-                                            agent.get('/api/related/outcomes?typeName=Weekly')
-                                                .set('Authorization', 'bearer ' + token)
-                                                .expect(200)
-                                                .end(function (err, results) {
-                                                    results.body.length.should.be.exactly(3);
-                                                    results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                                                    results.body[1].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
-                                                    results.body[2].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
-                                                    done();
-                                                });
+                        .then(function (results) {
+                            lastWeeksOutcomeResults = results;
 
-                                        });
-                                });
+                            return agent.post('/api/reflections')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(lastWeeksReflection);
+                        })
+                        .then(function (results) {
+                            lastWeeksReflectionResults = results;
+
+                            return agent.post('/api/outcomes')
+                                .set('Authorization', 'bearer ' + token)
+                                .send(thisMonthsOutcome);
+                        })
+                        .then(function (results) {
+                            thisMonthsOutcomeResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Weekly')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(3);
+                            results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                            results.body[1].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
+                            results.body[2].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                            done();
                         });
                 });
 
@@ -482,29 +524,36 @@ describe('Related ITs', function () {
                         effectiveDate: lastWeek.toDate()
                     };
 
+                    var lastWeeksOutcomeResults;
+                    var lastWeeksReflectionResults;
+
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
-                        .end(function (err, lastWeeksOutcomeResults) {
-                            agent.post('/api/reflections')
+                        .then(function (results) {
+                            lastWeeksOutcomeResults = results;
+
+                            return agent.post('/api/reflections')
                                 .set('Authorization', 'bearer ' + token)
-                                .send(lastWeeksReflection)
-                                .end(function (err, lastWeeksReflectionResults) {
-                                    agent.post('/api/outcomes')
-                                        .send(otherUsersLastWeeksOutcome)
-                                        .set('Authorization', 'bearer ' + otherUserToken)
-                                        .end(function () {
-                                            agent.get('/api/related/outcomes?typeName=Weekly')
-                                                .set('Authorization', 'bearer ' + token)
-                                                .expect(200)
-                                                .end(function (err, results) {
-                                                    results.body.length.should.be.exactly(2);
-                                                    results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                                                    results.body[1].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
-                                                    done();
-                                                });
-                                        });
-                                });
+                                .send(lastWeeksReflection);
+                        })
+                        .then(function (results) {
+                            lastWeeksReflectionResults = results;
+
+                            return agent.post('/api/outcomes')
+                                .set('Authorization', 'bearer ' + otherUserToken)
+                                .send(otherUsersLastWeeksOutcome);
+                        })
+                        .then(function () {
+                            return agent.get('/api/related/outcomes?typeName=Weekly')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(2);
+                            results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                            results.body[1].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                            done();
                         });
                 })
             });
@@ -523,18 +572,21 @@ describe('Related ITs', function () {
                         effectiveDate: lastMonth.toDate()
                     };
 
+                    var postReflectionResults;
                     agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastMonthsReflection)
-                        .end(function (err, postReflectionResults) {
-                            agent.get('/api/related/outcomes?typeName=Monthly')
+                        .then(function (results) {
+                            postReflectionResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Monthly')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
-                                    done();
-                                });
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
+                            done();
                         })
 
                 });
@@ -555,15 +607,15 @@ describe('Related ITs', function () {
                     agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(notLastMonthsReflection)
-                        .end(function () {
-                            agent.get('/api/related/outcomes?typeName=Monthly')
+                        .then(function () {
+                            return agent.get('/api/related/outcomes?typeName=Monthly')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(0);
-                                    done();
-                                });
+                                .expect(200);
                         })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(0);
+                            done();
+                        });
                 });
 
                 it('should get back last months monthly outcome', function (done) {
@@ -576,18 +628,21 @@ describe('Related ITs', function () {
                         effectiveDate: lastMonth.toDate()
                     };
 
+                    var lastWeeksOutcomeResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastMonthsOutcome)
-                        .end(function (err, lastWeeksOutcomeResults) {
-                            agent.get('/api/related/outcomes?typeName=Monthly')
+                        .then(function (results) {
+                            lastWeeksOutcomeResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Monthly')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                                    done();
-                                });
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                            done();
                         });
                 });
 
@@ -612,24 +667,30 @@ describe('Related ITs', function () {
                         effectiveDate: lastMonth.toDate()
                     };
 
+                    var lastMonthsOutcomeResults;
+                    var lastMonthReflectionResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastMonthsOutcome)
-                        .end(function (err, lastMonthsOutcomeResults) {
-                            agent.post('/api/reflections')
+                        .then(function (results) {
+                            lastMonthsOutcomeResults = results;
+
+                            return agent.post('/api/reflections')
                                 .set('Authorization', 'bearer ' + token)
-                                .send(lastMonthsReflection)
-                                .end(function (err, lastMonthReflectionResults) {
-                                    agent.get('/api/related/outcomes?typeName=Monthly')
-                                        .set('Authorization', 'bearer ' + token)
-                                        .expect(200)
-                                        .end(function (err, results) {
-                                            results.body.length.should.be.exactly(2);
-                                            results.body[0].objectId.should.be.equal(lastMonthsOutcomeResults.body._id);
-                                            results.body[1].objectId.should.be.equal(lastMonthReflectionResults.body._id);
-                                            done();
-                                        });
-                                });
+                                .send(lastMonthsReflection);
+                        })
+                        .then(function (results) {
+                            lastMonthReflectionResults = results;
+
+                            return agent.get('/api/related/outcomes?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(2);
+                            results.body[0].objectId.should.be.equal(lastMonthsOutcomeResults.body._id);
+                            results.body[1].objectId.should.be.equal(lastMonthReflectionResults.body._id);
+                            done();
                         });
                 });
 
@@ -662,30 +723,36 @@ describe('Related ITs', function () {
                         effectiveDate: lastMonth.toDate()
                     };
 
+                    var lastMonthsOutcomeResults;
+                    var lastMonthsReflectionResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
-                        .end(function (err, lastMonthsOutcomeResults) {
-                            agent.post('/api/reflections')
+                        .then(function (results) {
+                            lastMonthsOutcomeResults = results;
+
+                            return agent.post('/api/reflections')
                                 .set('Authorization', 'bearer ' + token)
-                                .send(lastMonthsReflection)
-                                .end(function (err, lastMonthsReflectionResults) {
-                                    agent.post('/api/outcomes')
-                                        .send(otherUsersLastMonthssOutcome)
-                                        .set('Authorization', 'bearer ' + otherUserToken)
-                                        .end(function () {
-                                            agent.get('/api/related/outcomes?typeName=Monthly')
-                                                .set('Authorization', 'bearer ' + token)
-                                                .expect(200)
-                                                .end(function (err, results) {
-                                                    results.body.length.should.be.exactly(2);
-                                                    results.body[0].objectId.should.be.equal(lastMonthsOutcomeResults.body._id);
-                                                    results.body[1].objectId.should.be.equal(lastMonthsReflectionResults.body._id);
-                                                    done();
-                                                });
-                                        });
-                                });
-                        });
+                                .send(lastMonthsReflection);
+                        })
+                        .then(function (results) {
+                            lastMonthsReflectionResults = results;
+
+                            return agent.post('/api/outcomes')
+                                .send(otherUsersLastMonthssOutcome)
+                                .set('Authorization', 'bearer ' + otherUserToken);
+                        })
+                        .then(function () {
+                            return agent.get('/api/related/outcomes?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(2);
+                            results.body[0].objectId.should.be.equal(lastMonthsOutcomeResults.body._id);
+                            results.body[1].objectId.should.be.equal(lastMonthsReflectionResults.body._id);
+                            done();
+                        })
                 })
             })
         });
@@ -718,20 +785,23 @@ describe('Related ITs', function () {
                         effectiveDate: lastWeek.toDate()
                     };
 
+                    var postReflectionResults;
                     agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksReflection)
-                        .end(function (err, postReflectionResults) {
-                            agent.get('/api/related/reflections?typeName=Weekly')
+                        .then(function (results) {
+                            postReflectionResults = results;
+
+                            return agent.get('/api/related/reflections?typeName=Weekly')
                                 .set('Authorization', 'bearer ' + token)
                                 .send()
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
-                                    done();
-                                });
+                                .expect(200);
                         })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
+                            done();
+                        });
 
                 });
 
@@ -751,15 +821,15 @@ describe('Related ITs', function () {
                     agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(notLastWeeksReflection)
-                        .end(function () {
-                            agent.get('/api/related/reflections?typeName=Weekly')
+                        .then(function () {
+                            return agent.get('/api/related/reflections?typeName=Weekly')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(0);
-                                    done();
-                                });
+                                .expect(200);
                         })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(0);
+                            done();
+                        });
                 });
 
                 it('should get back current weekly outcome', function (done) {
@@ -771,20 +841,23 @@ describe('Related ITs', function () {
                         effectiveDate: new Date()
                     };
 
+                    var thisWeeksOutcomeResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisWeeksOutcome)
-                        .end(function (err, thisWeeksOutcomeResults) {
-                            agent.get('/api/related/reflections?typeName=Weekly')
+                        .then(function (results) {
+                            thisWeeksOutcomeResults = results;
+
+                            return agent.get('/api/related/reflections?typeName=Weekly')
                                 .set('Authorization', 'bearer ' + token)
                                 .send()
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                                    done();
-                                });
-                        });
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
+                            done();
+                        })
                 });
 
                 it('should get back all related entries', function (done) {
@@ -808,26 +881,32 @@ describe('Related ITs', function () {
                         effectiveDate: lastWeek.toDate()
                     };
 
+                    var thisWeeksOutcomeResults;
+                    var lastWeeksReflectionResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisWeeksOutcome)
-                        .end(function (err, thisWeeksOutcomeResults) {
-                            agent.post('/api/reflections')
+                        .then(function (results) {
+                            thisWeeksOutcomeResults = results;
+
+                            return agent.post('/api/reflections')
                                 .set('Authorization', 'bearer ' + token)
-                                .send(lastWeeksReflection)
-                                .end(function (err, lastWeeksReflectionResults) {
-                                    agent.get('/api/related/reflections?typeName=Weekly')
-                                        .set('Authorization', 'bearer ' + token)
-                                        .send()
-                                        .expect(200)
-                                        .end(function (err, results) {
-                                            results.body.length.should.be.exactly(2);
-                                            results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
-                                            results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                                            done();
-                                        });
-                                });
-                        });
+                                .send(lastWeeksReflection);
+                        })
+                        .then(function (results) {
+                            lastWeeksReflectionResults = results;
+
+                            return agent.get('/api/related/reflections?typeName=Weekly')
+                                .set('Authorization', 'bearer ' + token)
+                                .send()
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(2);
+                            results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                            results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
+                            done();
+                        })
                 });
 
                 it('should only get back related entries for the user', function (done) {
@@ -859,31 +938,37 @@ describe('Related ITs', function () {
                         effectiveDate: lastWeek.toDate()
                     };
 
+                    var thisWeeksOutcomeResults;
+                    var lastWeeksReflectionResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisWeeksOutcome)
-                        .end(function (err, thisWeeksOutcomeResults) {
-                            agent.post('/api/reflections')
+                        .then(function (results) {
+                            thisWeeksOutcomeResults = results;
+
+                            return agent.post('/api/reflections')
                                 .set('Authorization', 'bearer ' + token)
-                                .send(lastWeeksReflection)
-                                .end(function (err, lastWeeksReflectionResults) {
-                                    agent.post('/api/outcomes')
-                                        .set('Authorization', 'bearer ' + otherUserToken)
-                                        .send(otherUsersWeeksOutcome)
-                                        .end(function () {
-                                            agent.get('/api/related/reflections?typeName=Weekly')
-                                                .set('Authorization', 'bearer ' + token)
-                                                .send()
-                                                .expect(200)
-                                                .end(function (err, results) {
-                                                    results.body.length.should.be.exactly(2);
-                                                    results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
-                                                    results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                                                    done();
-                                                });
-                                        });
-                                });
-                        });
+                                .send(lastWeeksReflection);
+                        })
+                        .then(function (results) {
+                            lastWeeksReflectionResults = results;
+
+                            return agent.post('/api/outcomes')
+                                .set('Authorization', 'bearer ' + otherUserToken)
+                                .send(otherUsersWeeksOutcome);
+                        })
+                        .then(function () {
+                            return agent.get('/api/related/reflections?typeName=Weekly')
+                                .set('Authorization', 'bearer ' + token)
+                                .send()
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(2);
+                            results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                            results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
+                            done();
+                        })
                 });
 
                 describe('effectiveDate param', function () {
@@ -909,25 +994,31 @@ describe('Related ITs', function () {
                             effectiveDate: twoWeeksAgo.toDate()
                         };
 
+                        var lastWeeksOutcomeResults;
+                        var twoWeeksAgoReflectionResults;
                         agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
                             .send(lastWeeksOutcome)
-                            .end(function (err, lastWeeksOutcomeResults) {
-                                agent.post('/api/reflections')
+                            .then(function (results) {
+                                lastWeeksOutcomeResults = results;
+
+                                return agent.post('/api/reflections')
                                     .set('Authorization', 'bearer ' + token)
-                                    .send(twoWeeksAgoReflection)
-                                    .end(function (err, twoWeeksAgoReflectionResults) {
-                                        agent.get('/api/related/reflections?typeName=Weekly&effectiveDate=' + encodeURI(lastWeek.toDate()))
-                                            .set('Authorization', 'bearer ' + token)
-                                            .send()
-                                            .expect(200)
-                                            .end(function (err, results) {
-                                                results.body.length.should.be.exactly(2);
-                                                results.body[0].objectId.should.be.equal(twoWeeksAgoReflectionResults.body._id);
-                                                results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                                                done();
-                                            });
-                                    });
+                                    .send(twoWeeksAgoReflection);
+                            })
+                            .then(function (results) {
+                                twoWeeksAgoReflectionResults = results;
+
+                                return agent.get('/api/related/reflections?typeName=Weekly&effectiveDate=' + encodeURI(lastWeek.toDate()))
+                                    .set('Authorization', 'bearer ' + token)
+                                    .send()
+                                    .expect(200);
+                            })
+                            .then(function (results) {
+                                results.body.length.should.be.exactly(2);
+                                results.body[0].objectId.should.be.equal(twoWeeksAgoReflectionResults.body._id);
+                                results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                done();
                             });
                     });
                 });
@@ -947,20 +1038,23 @@ describe('Related ITs', function () {
                         effectiveDate: lastMonth.toDate()
                     };
 
+                    var postReflectionResults;
                     agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastMonthsReflection)
-                        .end(function (err, postReflectionResults) {
-                            agent.get('/api/related/reflections?typeName=Monthly')
+                        .then(function (results) {
+                            postReflectionResults = results;
+
+                            return agent.get('/api/related/reflections?typeName=Monthly')
                                 .set('Authorization', 'bearer ' + token)
                                 .send()
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
-                                    done();
-                                });
+                                .expect(200);
                         })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
+                            done();
+                        });
 
                 });
 
@@ -980,14 +1074,14 @@ describe('Related ITs', function () {
                     agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(notLastMonthsReflection)
-                        .end(function () {
-                            agent.get('/api/related/reflections?typeName=Monthly')
+                        .then(function () {
+                            return agent.get('/api/related/reflections?typeName=Monthly')
                                 .set('Authorization', 'bearer ' + token)
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(0);
-                                    done();
-                                });
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(0);
+                            done();
                         })
                 });
 
@@ -1000,20 +1094,23 @@ describe('Related ITs', function () {
                         effectiveDate: new Date()
                     };
 
+                    var thisWeeksOutcomeResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
-                        .end(function (err, thisWeeksOutcomeResults) {
-                            agent.get('/api/related/reflections?typeName=Monthly')
+                        .then(function (results) {
+                            thisWeeksOutcomeResults = results;
+
+                            return agent.get('/api/related/reflections?typeName=Monthly')
                                 .set('Authorization', 'bearer ' + token)
                                 .send()
-                                .expect(200)
-                                .end(function (err, results) {
-                                    results.body.length.should.be.exactly(1);
-                                    results.body[0].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                                    done();
-                                });
-                        });
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(1);
+                            results.body[0].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
+                            done();
+                        })
                 });
 
                 it('should get back all related entries', function (done) {
@@ -1037,26 +1134,32 @@ describe('Related ITs', function () {
                         effectiveDate: lastMonth.toDate()
                     };
 
+                    var thisMonthsOutcomeResults;
+                    var lastMonthsReflectionResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
-                        .end(function (err, thisMonthsOutcomeResults) {
-                            agent.post('/api/reflections')
+                        .then(function (results) {
+                            thisMonthsOutcomeResults = results;
+
+                            return agent.post('/api/reflections')
                                 .set('Authorization', 'bearer ' + token)
-                                .send(lastMonthsReflection)
-                                .end(function (err, lastMonthsReflectionResults) {
-                                    agent.get('/api/related/reflections?typeName=Monthly')
-                                        .set('Authorization', 'bearer ' + token)
-                                        .send()
-                                        .expect(200)
-                                        .end(function (err, results) {
-                                            results.body.length.should.be.exactly(2);
-                                            results.body[0].objectId.should.be.equal(lastMonthsReflectionResults.body._id);
-                                            results.body[1].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
-                                            done();
-                                        });
-                                });
-                        });
+                                .send(lastMonthsReflection);
+                        })
+                        .then(function (results) {
+                            lastMonthsReflectionResults = results;
+
+                            return agent.get('/api/related/reflections?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .send()
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(2);
+                            results.body[0].objectId.should.be.equal(lastMonthsReflectionResults.body._id);
+                            results.body[1].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
+                            done();
+                        })
                 });
 
                 it('should only get back related entries for the user', function (done) {
@@ -1088,31 +1191,37 @@ describe('Related ITs', function () {
                         effectiveDate: lastMonth.toDate()
                     };
 
+                    var thisWeeksOutcomeResults;
+                    var lastWeeksReflectionResults;
                     agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
-                        .end(function (err, thisWeeksOutcomeResults) {
-                            agent.post('/api/reflections')
+                        .then(function (results) {
+                            thisWeeksOutcomeResults = results;
+
+                            return agent.post('/api/reflections')
                                 .set('Authorization', 'bearer ' + token)
-                                .send(lastMonthReflection)
-                                .end(function (err, lastWeeksReflectionResults) {
-                                    agent.post('/api/outcomes')
-                                        .set('Authorization', 'bearer ' + otherUserToken)
-                                        .send(otherUsersMonthsOutcome)
-                                        .end(function () {
-                                            agent.get('/api/related/reflections?typeName=Monthly')
-                                                .set('Authorization', 'bearer ' + token)
-                                                .send()
-                                                .expect(200)
-                                                .end(function (err, results) {
-                                                    results.body.length.should.be.exactly(2);
-                                                    results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
-                                                    results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                                                    done();
-                                                });
-                                        });
-                                });
-                        });
+                                .send(lastMonthReflection);
+                        })
+                        .then(function (results) {
+                            lastWeeksReflectionResults = results;
+
+                            return agent.post('/api/outcomes')
+                                .set('Authorization', 'bearer ' + otherUserToken)
+                                .send(otherUsersMonthsOutcome);
+                        })
+                        .then(function () {
+                            return agent.get('/api/related/reflections?typeName=Monthly')
+                                .set('Authorization', 'bearer ' + token)
+                                .send()
+                                .expect(200);
+                        })
+                        .then(function (results) {
+                            results.body.length.should.be.exactly(2);
+                            results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                            results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
+                            done();
+                        })
                 });
 
                 describe('effectiveDate param', function () {
@@ -1138,25 +1247,31 @@ describe('Related ITs', function () {
                             effectiveDate: twoMonthsAgo.toDate()
                         };
 
+                        var lastWeeksOutcomeResults;
+                        var twoWeeksAgoReflectionResults;
                         agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
                             .send(lastMonthsOutcome)
-                            .end(function (err, lastWeeksOutcomeResults) {
-                                agent.post('/api/reflections')
+                            .then(function (results) {
+                                lastWeeksOutcomeResults = results;
+
+                                return agent.post('/api/reflections')
                                     .set('Authorization', 'bearer ' + token)
-                                    .send(twoMonthsAgoReflection)
-                                    .end(function (err, twoWeeksAgoReflectionResults) {
-                                        agent.get('/api/related/reflections?typeName=Monthly&effectiveDate=' + encodeURI(lastMonth.toDate()))
-                                            .set('Authorization', 'bearer ' + token)
-                                            .send()
-                                            .expect(200)
-                                            .end(function (err, results) {
-                                                results.body.length.should.be.exactly(2);
-                                                results.body[0].objectId.should.be.equal(twoWeeksAgoReflectionResults.body._id);
-                                                results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                                                done();
-                                            });
-                                    });
+                                    .send(twoMonthsAgoReflection);
+                            })
+                            .then(function (results) {
+                                twoWeeksAgoReflectionResults = results;
+
+                                return agent.get('/api/related/reflections?typeName=Monthly&effectiveDate=' + encodeURI(lastMonth.toDate()))
+                                    .set('Authorization', 'bearer ' + token)
+                                    .send()
+                                    .expect(200);
+                            })
+                            .then(function (results) {
+                                results.body.length.should.be.exactly(2);
+                                results.body[0].objectId.should.be.equal(twoWeeksAgoReflectionResults.body._id);
+                                results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
+                                done();
                             });
                     });
                 });

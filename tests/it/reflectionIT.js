@@ -1,5 +1,5 @@
 var should = require('should'),
-    request = require('supertest'),
+    request = require('supertest-as-promised'),
     server,
     mongoose = require('mongoose'),
     Reflection,
@@ -40,15 +40,15 @@ describe('Reflection ITs', function () {
 
         agent.post('/api/login')
             .send(itUser)
-            .end(function (err, results) {
+            .then(function (results) {
                 token = results.body.token;
 
-                agent.post('/api/login')
-                    .send(otherItUser)
-                    .end(function (err, results) {
-                        otherUserToken = results.body.token;
-                        done();
-                    });
+                return agent.post('/api/login')
+                    .send(otherItUser);
+            })
+            .then(function (results) {
+                otherUserToken = results.body.token;
+                done();
             });
     });
 
@@ -82,7 +82,7 @@ describe('Reflection ITs', function () {
                     .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(201)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.should.have.property('_id');
                         results.body.should.have.property('typeName', reflection.typeName);
                         results.body.should.have.property('firstThingThatWentWell', reflection.firstThingThatWentWell);
@@ -301,26 +301,26 @@ describe('Reflection ITs', function () {
                     effectiveDate: new Date()
                 };
 
-                // Callback hell commencing!
-                // TODO: Consider supertest-as-promised
                 agent.post('/api/reflections')
                     .set('Authorization', 'bearer ' + token)
                     .send(reflection1)
-                    .end(function () {
-                        agent.post('/api/reflections')
+                    .then(function () {
+                        return agent.post('/api/reflections')
                             .set('Authorization', 'bearer ' + token)
-                            .send(reflection2)
-                            .end(function () {
-                                agent.post('/api/reflections')
-                                    .set('Authorization', 'bearer ' + token)
-                                    .send(reflection3)
-                                    .end(function () {
-                                        agent.post('/api/reflections')
-                                            .set('Authorization', 'bearer ' + otherUserToken)
-                                            .send(otherUsersReflection)
-                                            .end(done);
-                                    });
-                            });
+                            .send(reflection2);
+                    })
+                    .then(function () {
+                        return agent.post('/api/reflections')
+                            .set('Authorization', 'bearer ' + token)
+                            .send(reflection3);
+                    })
+                    .then(function () {
+                        return agent.post('/api/reflections')
+                            .set('Authorization', 'bearer ' + otherUserToken)
+                            .send(otherUsersReflection);
+                    })
+                    .then(function () {
+                        done();
                     });
             });
 
@@ -328,7 +328,7 @@ describe('Reflection ITs', function () {
                 agent.get('/api/reflections')
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.length.should.be.exactly(3);
 
                         results.body[0].should.have.property('_id');
@@ -368,7 +368,7 @@ describe('Reflection ITs', function () {
                 agent.get('/api/reflections')
                     .set('Authorization', 'bearer ' + otherUserToken)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.length.should.be.exactly(1);
 
                         results.body[0].should.have.property('_id');
@@ -424,18 +424,17 @@ describe('Reflection ITs', function () {
             agent.post('/api/reflections')
                 .set('Authorization', 'bearer ' + token)
                 .send(reflection)
-                .end(function (err, results) {
+                .then(function (results) {
                     originalReflection = results.body;
 
-                    agent.post('/api/reflections')
+                    return agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + otherUserToken)
-                        .send(otherUsersReflection)
-                        .end(function (err, results) {
-                            originalOtherUsersReflection = results.body;
-
-                            done();
-                        });
-                });
+                        .send(otherUsersReflection);
+                })
+                .then (function (results) {
+                    originalOtherUsersReflection = results.body;
+                    done();
+                })
         });
 
         describe('get', function () {
@@ -444,7 +443,7 @@ describe('Reflection ITs', function () {
                 agent.get('/api/reflections/' + originalReflection._id)
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.should.have.property('_id', originalReflection._id);
                         results.body.should.have.property('typeName', originalReflection.typeName);
                         results.body.should.have.property('firstThingThatWentWell', originalReflection.firstThingThatWentWell);
@@ -500,7 +499,7 @@ describe('Reflection ITs', function () {
                     .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.should.have.property('typeName', newTypeName);
                         results.body.should.have.property('firstThingThatWentWell', newFirstThingThatWentWell);
                         results.body.should.have.property('secondThingThatWentWell', newSecondThingThatWentWell);

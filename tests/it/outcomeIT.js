@@ -1,5 +1,5 @@
 var should = require('should'),
-    request = require('supertest'),
+    request = require('supertest-as-promised'),
     server,
     mongoose = require('mongoose'),
     Outcome,
@@ -41,15 +41,15 @@ describe('Outcome ITs', function () {
 
         agent.post('/api/login')
             .send(itUser)
-            .end(function (err, results) {
+            .then(function (results) {
                 token = results.body.token;
 
-                agent.post('/api/login')
-                    .send(otherItUser)
-                    .end(function (err, results) {
-                        otherUserToken = results.body.token;
-                        done();
-                    });
+                return agent.post('/api/login')
+                    .send(otherItUser);
+            })
+            .then(function (results) {
+                otherUserToken = results.body.token;
+                done();
             });
     });
 
@@ -79,7 +79,7 @@ describe('Outcome ITs', function () {
                     .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(201)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.should.have.property('_id');
                         results.body.should.have.property('typeName', outcome.typeName);
                         results.body.should.have.property('firstStory', outcome.firstStory);
@@ -214,26 +214,26 @@ describe('Outcome ITs', function () {
                     effectiveDate: new Date()
                 };
 
-                // Callback hell commencing!
-                // TODO: Consider supertest-as-promised
                 agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(outcome1)
-                    .end(function () {
-                        agent.post('/api/outcomes')
+                    .then(function () {
+                        return agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
-                            .send(outcome2)
-                            .end(function () {
-                                agent.post('/api/outcomes')
-                                    .set('Authorization', 'bearer ' + token)
-                                    .send(outcome3)
-                                    .end(function () {
-                                        agent.post('/api/outcomes')
-                                            .set('Authorization', 'bearer ' + otherUserToken)
-                                            .send(otherUsersOutcome)
-                                            .end(done);
-                                    });
-                            });
+                            .send(outcome2);
+                    })
+                    .then(function () {
+                        return agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
+                            .send(outcome3)
+                    })
+                    .then(function () {
+                        return agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + otherUserToken)
+                            .send(otherUsersOutcome);
+                    })
+                    .then(function () {
+                        done();
                     });
             });
 
@@ -241,7 +241,7 @@ describe('Outcome ITs', function () {
                 agent.get('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.length.should.be.exactly(3);
 
                         results.body[0].should.have.property('_id');
@@ -272,7 +272,7 @@ describe('Outcome ITs', function () {
                 agent.get('/api/outcomes')
                     .set('Authorization', 'bearer ' + otherUserToken)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.length.should.be.exactly(1);
 
                         results.body[0].should.have.property('_id');
@@ -319,18 +319,17 @@ describe('Outcome ITs', function () {
             agent.post('/api/outcomes')
                 .set('Authorization', 'bearer ' + token)
                 .send(outcome)
-                .end(function (err, results) {
+                .then(function (results) {
                     originalOutcome = results.body;
 
-                    agent.post('/api/outcomes')
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + otherUserToken)
-                        .send(otherUsersOutcome)
-                        .end(function (err, results) {
-                            otherUsersOriginalOutcome = results.body;
-
-                            done();
-                        });
-                });
+                        .send(otherUsersOutcome);
+                })
+                .then(function (results) {
+                    otherUsersOriginalOutcome = results.body;
+                    done();
+                })
         });
 
         describe('get', function () {
@@ -339,7 +338,7 @@ describe('Outcome ITs', function () {
                 agent.get('/api/outcomes/' + originalOutcome._id)
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.should.have.property('_id', originalOutcome._id);
                         results.body.should.have.property('typeName', originalOutcome.typeName);
                         results.body.should.have.property('firstStory', originalOutcome.firstStory);
@@ -386,7 +385,7 @@ describe('Outcome ITs', function () {
                     .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.should.have.property('typeName', newTypeName);
                         results.body.should.have.property('firstStory', newFirstStory);
                         results.body.should.have.property('secondStory', newSecondStory);
