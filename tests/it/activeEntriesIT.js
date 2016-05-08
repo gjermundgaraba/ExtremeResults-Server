@@ -1,5 +1,5 @@
 var should = require('should'),
-    request = require('supertest'),
+    request = require('supertest-as-promised'),
     moment = require('moment'),
     server,
     mongoose = require('mongoose'),
@@ -41,16 +41,15 @@ describe('Outcome ITs', function () {
 
         agent.post('/api/login')
             .send(itUser)
-            .end(function (err, results) {
+            .then(function (results) {
                 token = results.body.token;
-
-                agent.post('/api/login')
+                return agent.post('/api/login')
                     .send(otherItUser)
-                    .end(function (err, results) {
-                        otherUserToken = results.body.token;
-                        done();
-                    });
-            });
+            })
+            .then(function (results) {
+                otherUserToken = results.body.token;
+                done();
+            })
     });
 
     afterEach(function (done) {
@@ -91,32 +90,37 @@ describe('Outcome ITs', function () {
                     effectiveDate: new Date()
                 };
 
+                var dailyResults;
+                var weeklyResults;
+                var monthlyResults;
                 agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
-                    .end(function (err, dailyResults) {
-                        agent.post('/api/outcomes')
+                    .then(function (results) {
+                        dailyResults = results;
+                        return agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
-                            .send(activeWeeklyOutcome)
-                            .end(function (err, weeklyResults) {
-                                agent.post('/api/outcomes')
-                                    .set('Authorization', 'bearer ' + token)
-                                    .send(activeMonthlyOutcome)
-                                    .end(function (err, monthlyResults) {
-                                        agent.get('/api/activeEntries')
-                                            .set('Authorization', 'bearer ' + token)
-                                            .send()
-                                            .expect(200)
-                                            .end(function (err, results) {
-                                                results.body.length.should.be.exactly(3);
-                                                results.body[0].objectId.should.be.equal(dailyResults.body._id);
-                                                results.body[1].objectId.should.be.equal(weeklyResults.body._id);
-                                                results.body[2].objectId.should.be.equal(monthlyResults.body._id);
-                                                done();
-                                            });
-                                    });
-
-                            });
+                            .send(activeWeeklyOutcome);
+                    })
+                    .then(function (results) {
+                        weeklyResults = results;
+                        return agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
+                            .send(activeMonthlyOutcome);
+                    })
+                    .then(function (results) {
+                        monthlyResults = results;
+                        return agent.get('/api/activeEntries')
+                            .set('Authorization', 'bearer ' + token)
+                            .send()
+                            .expect(200);
+                    })
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(3);
+                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
+                        results.body[1].objectId.should.be.equal(weeklyResults.body._id);
+                        results.body[2].objectId.should.be.equal(monthlyResults.body._id);
+                        done();
                     });
             });
 
@@ -137,24 +141,26 @@ describe('Outcome ITs', function () {
                     effectiveDate: new Date()
                 };
 
+                var dailyResults;
                 agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
-                    .end(function (err, dailyResults) {
-                        agent.post('/api/outcomes')
+                    .then(function (results) {
+                        dailyResults = results;
+                        return agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + otherUserToken)
-                            .send(otherUsersActiveDailyOutcome)
-                            .end(function () {
-                                agent.get('/api/activeEntries')
-                                    .set('Authorization', 'bearer ' + token)
-                                    .send()
-                                    .expect(200)
-                                    .end(function (err, results) {
-                                        results.body.length.should.be.exactly(1);
-                                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
-                                        done();
-                                    });
-                            });
+                            .send(otherUsersActiveDailyOutcome);
+                    })
+                    .then(function () {
+                        return agent.get('/api/activeEntries')
+                            .set('Authorization', 'bearer ' + token)
+                            .send()
+                            .expect(200);
+                    })
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(1);
+                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
+                        done();
                     });
             });
 
@@ -176,24 +182,26 @@ describe('Outcome ITs', function () {
                     effectiveDate: lastWeek.toDate()
                 };
 
+                var dailyResults;
                 agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
-                    .end(function (err, dailyResults) {
-                        agent.post('/api/outcomes')
+                    .then(function (results) {
+                        dailyResults = results;
+                        return  agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
-                            .send(activeWeeklyOutcome)
-                            .end(function () {
-                                agent.get('/api/activeEntries')
-                                    .set('Authorization', 'bearer ' + token)
-                                    .send()
-                                    .expect(200)
-                                    .end(function (err, results) {
-                                        results.body.length.should.be.exactly(1);
-                                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
-                                        done();
-                                    });
-                            });
+                            .send(activeWeeklyOutcome);
+                    })
+                    .then(function () {
+                        return agent.get('/api/activeEntries')
+                            .set('Authorization', 'bearer ' + token)
+                            .send()
+                            .expect(200);
+                    })
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(1);
+                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
+                        done();
                     });
             });
 
@@ -215,24 +223,26 @@ describe('Outcome ITs', function () {
                     effectiveDate: new Date()
                 };
 
+                var weeklyResults;
                 agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
-                    .end(function () {
-                        agent.post('/api/outcomes')
+                    .then(function () {
+                        return  agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
-                            .send(activeWeeklyOutcome)
-                            .end(function (err, weeklyResults) {
-                                agent.get('/api/activeEntries')
-                                    .set('Authorization', 'bearer ' + token)
-                                    .send()
-                                    .expect(200)
-                                    .end(function (err, results) {
-                                        results.body.length.should.be.exactly(1);
-                                        results.body[0].objectId.should.be.equal(weeklyResults.body._id);
-                                        done();
-                                    });
-                            });
+                            .send(activeWeeklyOutcome);
+                    })
+                    .then(function (results) {
+                        weeklyResults = results;
+                        return agent.get('/api/activeEntries')
+                            .set('Authorization', 'bearer ' + token)
+                            .send()
+                            .expect(200);
+                    })
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(1);
+                        results.body[0].objectId.should.be.equal(weeklyResults.body._id);
+                        done();
                     });
             });
 
@@ -254,24 +264,26 @@ describe('Outcome ITs', function () {
                     effectiveDate: new Date()
                 };
 
+                var monthlyResults;
                 agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
-                    .end(function () {
-                        agent.post('/api/outcomes')
+                    .then(function () {
+                        return  agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
-                            .send(activeMonthlyOutcome)
-                            .end(function (err, monthlyResults) {
-                                agent.get('/api/activeEntries')
-                                    .set('Authorization', 'bearer ' + token)
-                                    .send()
-                                    .expect(200)
-                                    .end(function (err, results) {
-                                        results.body.length.should.be.exactly(1);
-                                        results.body[0].objectId.should.be.equal(monthlyResults.body._id);
-                                        done();
-                                    });
-                            });
+                            .send(activeMonthlyOutcome);
+                    })
+                    .then(function (results) {
+                        monthlyResults = results;
+                        return agent.get('/api/activeEntries')
+                            .set('Authorization', 'bearer ' + token)
+                            .send()
+                            .expect(200);
+                    })
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(1);
+                        results.body[0].objectId.should.be.equal(monthlyResults.body._id);
+                        done();
                     });
             });
 
@@ -303,28 +315,29 @@ describe('Outcome ITs', function () {
                     effectiveDate: lastMonth.toDate()
                 };
 
+
                 agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
-                    .end(function () {
-                        agent.post('/api/outcomes')
+                    .then(function () {
+                        return agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
-                            .send(activeWeeklyOutcome)
-                            .end(function () {
-                                agent.post('/api/outcomes')
-                                    .set('Authorization', 'bearer ' + token)
-                                    .send(activeMonthlyOutcome)
-                                    .end(function () {
-                                        agent.get('/api/activeEntries')
-                                            .set('Authorization', 'bearer ' + token)
-                                            .send()
-                                            .expect(200)
-                                            .end(function (err, results) {
-                                                results.body.length.should.be.exactly(0);
-                                                done();
-                                            });
-                                    });
-                            });
+                            .send(activeWeeklyOutcome);
+                    })
+                    .then(function () {
+                        return agent.post('/api/outcomes')
+                            .set('Authorization', 'bearer ' + token)
+                            .send(activeMonthlyOutcome);
+                    })
+                    .then(function () {
+                        return agent.get('/api/activeEntries')
+                            .set('Authorization', 'bearer ' + token)
+                            .send()
+                            .expect(200);
+                    })
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(0);
+                        done();
                     });
             });
 

@@ -1,5 +1,5 @@
 var should = require('should'),
-    request = require('supertest'),
+    request = require('supertest-as-promised'),
     server,
     mongoose = require('mongoose'),
     itUser,
@@ -43,7 +43,7 @@ describe('Register ITs', function () {
                 agent.post('/api/login')
                     .send(itUser)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.should.have.property('token');
                         done();
                     });

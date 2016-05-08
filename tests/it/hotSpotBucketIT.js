@@ -1,5 +1,5 @@
 var should = require('should'),
-    request = require('supertest'),
+    request = require('supertest-as-promised'),
     server,
     mongoose = require('mongoose'),
     HotSpotBucket,
@@ -40,16 +40,16 @@ describe('Hot Spot Bucket ITs', function () {
 
         agent.post('/api/login')
             .send(itUser)
-            .end(function (err, results) {
+            .then(function (results) {
                 token = results.body.token;
 
-                agent.post('/api/login')
-                    .send(otherItUser)
-                    .end(function (err, results) {
-                        otherUserToken = results.body.token;
-                        done();
-                    });
-            });
+                return agent.post('/api/login')
+                    .send(otherItUser);
+            })
+            .then(function (results) {
+                otherUserToken = results.body.token;
+                done();
+            })
     });
 
     afterEach(function (done) {
@@ -75,7 +75,7 @@ describe('Hot Spot Bucket ITs', function () {
                     .set('Authorization', 'bearer ' + token)
                     .send(hotSpotBucket)
                     .expect(201)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.should.have.property('objectId');
                         results.body.should.have.property('name', hotSpotBucket.name);
                         results.body.should.have.property('hotSpots', hotSpotBucket.hotSpots);
@@ -144,34 +144,34 @@ describe('Hot Spot Bucket ITs', function () {
                     hotSpots: ['Test', 'Test1232']
                 };
 
-                // Callback hell commencing!
-                // TODO: Consider supertest-as-promised
                 agent.post('/api/hotSpotBuckets')
                     .set('Authorization', 'bearer ' + token)
                     .send(hotSpotBucket1)
-                    .end(function () {
-                        agent.post('/api/hotSpotBuckets')
+                    .then(function () {
+                        return agent.post('/api/hotSpotBuckets')
                             .set('Authorization', 'bearer ' + token)
-                            .send(hotSpotBucket2)
-                            .end(function () {
-                                agent.post('/api/hotSpotBuckets')
-                                    .set('Authorization', 'bearer ' + token)
-                                    .send(hotSpotBucket3)
-                                    .end(function () {
-                                        agent.post('/api/hotSpotBuckets')
-                                            .set('Authorization', 'bearer ' + otherUserToken)
-                                            .send(otherUsersHotSpotBucket)
-                                            .end(done);
-                                    });
-                            });
-                    });
+                            .send(hotSpotBucket2);
+                    })
+                    .then(function () {
+                        return agent.post('/api/hotSpotBuckets')
+                            .set('Authorization', 'bearer ' + token)
+                            .send(hotSpotBucket3);
+                    })
+                    .then(function () {
+                        return agent.post('/api/hotSpotBuckets')
+                            .set('Authorization', 'bearer ' + otherUserToken)
+                            .send(otherUsersHotSpotBucket);
+                    })
+                    .then(function () {
+                        done();
+                    })
             });
 
             it('should get all hotSpotBuckets', function (done) {
                 agent.get('/api/hotSpotBuckets')
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.length.should.be.exactly(3);
 
                         results.body[0].should.have.property('objectId');
@@ -194,7 +194,7 @@ describe('Hot Spot Bucket ITs', function () {
                 agent.get('/api/hotSpotBuckets')
                     .set('Authorization', 'bearer ' + otherUserToken)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.length.should.be.exactly(1);
 
                         results.body[0].should.have.property('objectId');
@@ -232,17 +232,16 @@ describe('Hot Spot Bucket ITs', function () {
             agent.post('/api/hotSpotBuckets')
                 .set('Authorization', 'bearer ' + token)
                 .send(hotSpotBucket)
-                .end(function (err, results) {
+                .then(function (results) {
                     originalHotSpotBucket = results.body;
 
-                    agent.post('/api/hotSpotBuckets')
+                    return agent.post('/api/hotSpotBuckets')
                         .set('Authorization', 'bearer ' + otherUserToken)
-                        .send(otherUsersHotSpotBucket)
-                        .end(function (err, results) {
-                            originalOtherUsersHotSpotBucket = results.body;
-
-                            done();
-                        });
+                        .send(otherUsersHotSpotBucket);
+                })
+                .then(function (results) {
+                    originalOtherUsersHotSpotBucket = results.body;
+                    done();
                 });
         });
 
@@ -259,7 +258,7 @@ describe('Hot Spot Bucket ITs', function () {
                     .set('Authorization', 'bearer ' + token)
                     .send(hotSpotBucket)
                     .expect(200)
-                    .end(function (err, results) {
+                    .then(function (results) {
                         results.body.should.have.property('name', newName);
                         results.body.should.have.property('hotSpots', newHotSpots);
                         done();
