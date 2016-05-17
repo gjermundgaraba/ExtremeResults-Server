@@ -331,7 +331,7 @@ describe('Reflection ITs', function () {
                     .then(function (results) {
                         results.body.length.should.be.exactly(3);
 
-                        results.body[0].should.have.property('_id');
+                        results.body[0].should.have.property('objectId');
                         results.body[0].should.have.property('typeName', reflection1.typeName);
                         results.body[0].should.have.property('firstThingThatWentWell', reflection1.firstThingThatWentWell);
                         results.body[0].should.have.property('secondThingThatWentWell', reflection1.secondThingThatWentWell);
@@ -339,9 +339,10 @@ describe('Reflection ITs', function () {
                         results.body[0].should.have.property('firstThingToImprove', reflection1.firstThingToImprove);
                         results.body[0].should.have.property('secondThingToImprove', reflection1.secondThingToImprove);
                         results.body[0].should.have.property('thirdThingToImprove', reflection1.thirdThingToImprove);
+                        results.body[0].should.have.property('className', 'Reflection');
                         results.body[0].should.have.property('effectiveDate');
 
-                        results.body[1].should.have.property('_id');
+                        results.body[1].should.have.property('objectId');
                         results.body[1].should.have.property('typeName', reflection2.typeName);
                         results.body[1].should.have.property('firstThingThatWentWell', reflection2.firstThingThatWentWell);
                         results.body[1].should.have.property('secondThingThatWentWell', reflection2.secondThingThatWentWell);
@@ -349,9 +350,10 @@ describe('Reflection ITs', function () {
                         results.body[1].should.have.property('firstThingToImprove', reflection2.firstThingToImprove);
                         results.body[1].should.have.property('secondThingToImprove', reflection2.secondThingToImprove);
                         results.body[1].should.have.property('thirdThingToImprove', reflection2.thirdThingToImprove);
+                        results.body[1].should.have.property('className', 'Reflection');
                         results.body[1].should.have.property('effectiveDate');
 
-                        results.body[2].should.have.property('_id');
+                        results.body[2].should.have.property('objectId');
                         results.body[2].should.have.property('typeName', reflection3.typeName);
                         results.body[2].should.have.property('firstThingThatWentWell', reflection3.firstThingThatWentWell);
                         results.body[2].should.have.property('secondThingThatWentWell', reflection3.secondThingThatWentWell);
@@ -359,6 +361,7 @@ describe('Reflection ITs', function () {
                         results.body[2].should.have.property('firstThingToImprove', reflection3.firstThingToImprove);
                         results.body[2].should.have.property('secondThingToImprove', reflection3.secondThingToImprove);
                         results.body[2].should.have.property('thirdThingToImprove', reflection3.thirdThingToImprove);
+                        results.body[2].should.have.property('className', 'Reflection');
                         results.body[2].should.have.property('effectiveDate');
                         done();
                     });
@@ -371,7 +374,7 @@ describe('Reflection ITs', function () {
                     .then(function (results) {
                         results.body.length.should.be.exactly(1);
 
-                        results.body[0].should.have.property('_id');
+                        results.body[0].should.have.property('objectId');
                         results.body[0].should.have.property('typeName', otherUsersReflection.typeName);
                         results.body[0].should.have.property('firstThingThatWentWell', otherUsersReflection.firstThingThatWentWell);
                         results.body[0].should.have.property('secondThingThatWentWell', otherUsersReflection.secondThingThatWentWell);
@@ -379,6 +382,7 @@ describe('Reflection ITs', function () {
                         results.body[0].should.have.property('firstThingToImprove', otherUsersReflection.firstThingToImprove);
                         results.body[0].should.have.property('secondThingToImprove', otherUsersReflection.secondThingToImprove);
                         results.body[0].should.have.property('thirdThingToImprove', otherUsersReflection.thirdThingToImprove);
+                        results.body[0].should.have.property('className', 'Reflection');
                         results.body[0].should.have.property('effectiveDate');
 
                         done();

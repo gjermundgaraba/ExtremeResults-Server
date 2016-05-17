@@ -244,25 +244,28 @@ describe('Outcome ITs', function () {
                     .then(function (results) {
                         results.body.length.should.be.exactly(3);
 
-                        results.body[0].should.have.property('_id');
+                        results.body[0].should.have.property('objectId');
                         results.body[0].should.have.property('typeName', outcome1.typeName);
                         results.body[0].should.have.property('firstStory', outcome1.firstStory);
                         results.body[0].should.have.property('secondStory', outcome1.secondStory);
                         results.body[0].should.have.property('thirdStory', outcome1.thirdStory);
+                        results.body[0].should.have.property('className', 'Outcome');
                         results.body[0].should.have.property('effectiveDate');
 
-                        results.body[1].should.have.property('_id');
+                        results.body[1].should.have.property('objectId');
                         results.body[1].should.have.property('typeName', outcome2.typeName);
                         results.body[1].should.have.property('firstStory', outcome2.firstStory);
                         results.body[1].should.have.property('secondStory', outcome2.secondStory);
                         results.body[1].should.have.property('thirdStory', outcome2.thirdStory);
+                        results.body[1].should.have.property('className', 'Outcome');
                         results.body[1].should.have.property('effectiveDate');
 
-                        results.body[2].should.have.property('_id');
+                        results.body[2].should.have.property('objectId');
                         results.body[2].should.have.property('typeName', outcome3.typeName);
                         results.body[2].should.have.property('firstStory', outcome3.firstStory);
                         results.body[2].should.have.property('secondStory', outcome3.secondStory);
                         results.body[2].should.have.property('thirdStory', outcome3.thirdStory);
+                        results.body[2].should.have.property('className', 'Outcome');
                         results.body[2].should.have.property('effectiveDate');
                         done();
                     });
@@ -275,11 +278,12 @@ describe('Outcome ITs', function () {
                     .then(function (results) {
                         results.body.length.should.be.exactly(1);
 
-                        results.body[0].should.have.property('_id');
+                        results.body[0].should.have.property('objectId');
                         results.body[0].should.have.property('typeName', otherUsersOutcome.typeName);
                         results.body[0].should.have.property('firstStory', otherUsersOutcome.firstStory);
                         results.body[0].should.have.property('secondStory', otherUsersOutcome.secondStory);
                         results.body[0].should.have.property('thirdStory', otherUsersOutcome.thirdStory);
+                        results.body[0].should.have.property('className', 'Outcome');
                         results.body[0].should.have.property('effectiveDate');
 
                         done();

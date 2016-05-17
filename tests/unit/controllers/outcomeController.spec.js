@@ -30,12 +30,23 @@ describe("Outcome Controller", function() {
     describe('/outcomes', function () {
         describe('get', function () {
             it('should get all outcomes', function () {
+
                 var fakeOutcomes = [
                     {
-                        firstStory: 'Test1'
+                        _id: '1234',
+                        typeName: 'typeName1',
+                        firstStory: 'Test11',
+                        secondStory: 'Test12',
+                        thirdStory: 'Test13',
+                        effectiveDate: new Date()
                     },
                     {
-                        firstStory: 'Test123'
+                        _id: '2345',
+                        typeName: 'typeName2',
+                        firstStory: 'Test21',
+                        secondStory: 'Test22',
+                        thirdStory: 'Test23',
+                        effectiveDate: new Date()
                     }
                 ];
                 spyOn(OutcomeMock, 'find').and.callFake(function (query, callBack) {
@@ -45,7 +56,24 @@ describe("Outcome Controller", function() {
                 outcomeController.get(requestMock, responseMock);
 
                 expect(OutcomeMock.find).toHaveBeenCalled();
-                expect(responseMock.json).toHaveBeenCalledWith(fakeOutcomes);
+
+                var firstOutcome = responseMock.json.calls.mostRecent().args[0][0];
+                expect(firstOutcome.objectId).toEqual(fakeOutcomes[0]._id);
+                expect(firstOutcome.typeName).toEqual(fakeOutcomes[0].typeName);
+                expect(firstOutcome.firstStory).toEqual(fakeOutcomes[0].firstStory);
+                expect(firstOutcome.secondStory).toEqual(fakeOutcomes[0].secondStory);
+                expect(firstOutcome.thirdStory).toEqual(fakeOutcomes[0].thirdStory);
+                expect(firstOutcome.effectiveDate).toEqual(fakeOutcomes[0].effectiveDate);
+                expect(firstOutcome.className).toEqual('Outcome');
+
+                var secondOutcome = responseMock.json.calls.mostRecent().args[0][1];
+                expect(secondOutcome.objectId).toEqual(fakeOutcomes[1]._id);
+                expect(secondOutcome.typeName).toEqual(fakeOutcomes[1].typeName);
+                expect(secondOutcome.firstStory).toEqual(fakeOutcomes[1].firstStory);
+                expect(secondOutcome.secondStory).toEqual(fakeOutcomes[1].secondStory);
+                expect(secondOutcome.thirdStory).toEqual(fakeOutcomes[1].thirdStory);
+                expect(secondOutcome.effectiveDate).toEqual(fakeOutcomes[1].effectiveDate);
+                expect(secondOutcome.className).toEqual('Outcome');
             });
 
             it('should send back status code 500 on failure', function () {

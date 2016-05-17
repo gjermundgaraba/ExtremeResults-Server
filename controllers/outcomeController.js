@@ -33,7 +33,21 @@ var outcomeController = function (Outcome) {
             if (error) {
                 res.status(500).send(error);
             } else {
-                res.json(outcomes);
+                var entries = [];
+
+                outcomes.forEach(function (result) {
+                    entries.push({
+                        objectId: result._id,
+                        typeName: result.typeName,
+                        firstStory: result.firstStory,
+                        secondStory: result.secondStory,
+                        thirdStory: result.thirdStory,
+                        effectiveDate: result.effectiveDate,
+                        className: 'Outcome'
+                    })
+                });
+
+                res.json(entries);
             }
         });
     };

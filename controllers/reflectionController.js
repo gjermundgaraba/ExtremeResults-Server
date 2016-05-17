@@ -36,7 +36,24 @@ var reflectionController = function (Reflection) {
             if (error) {
                 res.status(500).send(error);
             } else {
-                res.json(reflections);
+                var entries = [];
+
+                reflections.forEach(function (reflection) {
+                    entries.push({
+                        objectId: reflection._id,
+                        typeName: reflection.typeName,
+                        firstThingThatWentWell: reflection.firstThingThatWentWell,
+                        secondThingThatWentWell: reflection.secondThingThatWentWell,
+                        thirdThingThatWentWell: reflection.thirdThingThatWentWell,
+                        firstThingToImprove: reflection.firstThingToImprove,
+                        secondThingToImprove: reflection.secondThingToImprove,
+                        thirdThingToImprove: reflection.thirdThingToImprove,
+                        effectiveDate: reflection.effectiveDate,
+                        className: 'Reflection'
+                    });
+                });
+
+                res.json(entries);
             }
         });
     };

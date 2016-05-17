@@ -32,10 +32,26 @@ describe("Reflection Controller", function() {
             it('should get all reflections', function () {
                 var fakeReflections = [
                     {
-                        firstThingThatWentWell: 'Test1'
+                        _id: '1234',
+                        typeName: 'typeName1',
+                        firstThingThatWentWell: 'WellTest11',
+                        secondThingThatWentWell: 'WellTest12',
+                        thirdThingThatWentWell: 'WellTest13',
+                        firstThingToImprove: 'ImproveTest11',
+                        secondThingToImprove: 'ImproveTest12',
+                        thirdThingToImprove: 'ImproveTest13',
+                        effectiveDate: new Date()
                     },
                     {
-                        firstThingThatWentWell: 'Test123'
+                        _id: '2345',
+                        typeName: 'typeName2',
+                        firstThingThatWentWell: 'WellTest21',
+                        secondThingThatWentWell: 'WellTest22',
+                        thirdThingThatWentWell: 'WellTest23',
+                        firstThingToImprove: 'ImproveTest21',
+                        secondThingToImprove: 'ImproveTest22',
+                        thirdThingToImprove: 'ImproveTest23',
+                        effectiveDate: new Date()
                     }
                 ];
                 spyOn(ReflectionMock, 'find').and.callFake(function (query, callBack) {
@@ -45,7 +61,30 @@ describe("Reflection Controller", function() {
                 reflectionController.get(requestMock, responseMock);
 
                 expect(ReflectionMock.find).toHaveBeenCalled();
-                expect(responseMock.json).toHaveBeenCalledWith(fakeReflections);
+
+                var firstReflection = responseMock.json.calls.mostRecent().args[0][0];
+                expect(firstReflection.objectId).toEqual(fakeReflections[0]._id);
+                expect(firstReflection.typeName).toEqual(fakeReflections[0].typeName);
+                expect(firstReflection.firstThingThatWentWell).toEqual(fakeReflections[0].firstThingThatWentWell);
+                expect(firstReflection.secondThingThatWentWell).toEqual(fakeReflections[0].secondThingThatWentWell);
+                expect(firstReflection.thirdThingThatWentWell).toEqual(fakeReflections[0].thirdThingThatWentWell);
+                expect(firstReflection.firstThingToImprove).toEqual(fakeReflections[0].firstThingToImprove);
+                expect(firstReflection.secondThingToImprove).toEqual(fakeReflections[0].secondThingToImprove);
+                expect(firstReflection.thirdThingToImprove).toEqual(fakeReflections[0].thirdThingToImprove);
+                expect(firstReflection.effectiveDate).toEqual(fakeReflections[0].effectiveDate);
+                expect(firstReflection.className).toEqual('Reflection');
+
+                var secondReflection = responseMock.json.calls.mostRecent().args[0][1];
+                expect(secondReflection.objectId).toEqual(fakeReflections[1]._id);
+                expect(secondReflection.typeName).toEqual(fakeReflections[1].typeName);
+                expect(secondReflection.firstThingThatWentWell).toEqual(fakeReflections[1].firstThingThatWentWell);
+                expect(secondReflection.secondThingThatWentWell).toEqual(fakeReflections[1].secondThingThatWentWell);
+                expect(secondReflection.thirdThingThatWentWell).toEqual(fakeReflections[1].thirdThingThatWentWell);
+                expect(secondReflection.firstThingToImprove).toEqual(fakeReflections[1].firstThingToImprove);
+                expect(secondReflection.secondThingToImprove).toEqual(fakeReflections[1].secondThingToImprove);
+                expect(secondReflection.thirdThingToImprove).toEqual(fakeReflections[1].thirdThingToImprove);
+                expect(secondReflection.effectiveDate).toEqual(fakeReflections[1].effectiveDate);
+                expect(secondReflection.className).toEqual('Reflection');
             });
 
             it('should send back status code 500 on failure', function () {
