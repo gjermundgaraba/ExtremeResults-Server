@@ -35,10 +35,16 @@ passport.use(new LocalStrategy(
             if (!user) {
                 return done(null, false, { message: 'Incorrect username.' });
             }
-            if (!user.validPassword(password)) {
-                return done(null, false, { message: 'Incorrect password.' });
-            }
-            return done(null, user);
+
+            user.validatePassword(password, function (error, validPassword) {
+                if (error) {
+                    done(null, false, { message: 'Incorrect password.' });
+                } else if (validPassword === true) {
+                    done(null, user);
+                } else {
+                    done(null, false, { message: 'Incorrect password.' })
+                }
+            });
         });
     }
 ));

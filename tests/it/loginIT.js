@@ -16,17 +16,17 @@ describe('Register ITs', function () {
         User = mongoose.model('User');
     });
 
-    beforeEach(function () {
+    beforeEach(function (done) {
         itUser = {
             username: 'test',
             password: 'password'
         };
 
-        var user = new User();
-        user.local.username = itUser.username;
-        user.local.password = itUser.password;
-
-        user.save();
+        agent.post('/api/register')
+            .send(itUser)
+            .then(function () {
+                done();
+            })
     });
 
     afterEach(function (done) {

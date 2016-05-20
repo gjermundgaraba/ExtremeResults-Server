@@ -28,23 +28,20 @@ describe('Reflection ITs', function () {
             password: 'password'
         };
 
-        var user = new User();
-        user.local.username = itUser.username;
-        user.local.password = itUser.password;
-        user.save();
-
-        var otherUser = new User();
-        otherUser.local.username = otherItUser.username;
-        otherUser.local.password = otherItUser.password;
-        otherUser.save();
-
-        agent.post('/api/login')
+        agent.post('/api/register')
             .send(itUser)
+            .then(function () {
+                return agent.post('/api/register')
+                    .send(otherItUser);
+            })
+            .then(function () {
+                return agent.post('/api/login')
+                    .send(itUser);
+            })
             .then(function (results) {
                 token = results.body.token;
-
                 return agent.post('/api/login')
-                    .send(otherItUser);
+                    .send(otherItUser)
             })
             .then(function (results) {
                 otherUserToken = results.body.token;

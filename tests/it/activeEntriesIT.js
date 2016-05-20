@@ -29,18 +29,16 @@ describe('Outcome ITs', function () {
             password: 'password'
         };
 
-        var user = new User();
-        user.local.username = itUser.username;
-        user.local.password = itUser.password;
-        user.save();
-
-        var otherUser = new User();
-        otherUser.local.username = otherItUser.username;
-        otherUser.local.password = otherItUser.password;
-        otherUser.save();
-
-        agent.post('/api/login')
+        agent.post('/api/register')
             .send(itUser)
+            .then(function () {
+                return agent.post('/api/register')
+                    .send(otherItUser);
+            })
+            .then(function () {
+                return agent.post('/api/login')
+                    .send(itUser);
+            })
             .then(function (results) {
                 token = results.body.token;
                 return agent.post('/api/login')
@@ -49,7 +47,7 @@ describe('Outcome ITs', function () {
             .then(function (results) {
                 otherUserToken = results.body.token;
                 done();
-            })
+            });
     });
 
     afterEach(function (done) {
@@ -117,9 +115,9 @@ describe('Outcome ITs', function () {
                     })
                     .then(function (results) {
                         results.body.length.should.be.exactly(3);
-                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
+                        results.body[0].objectId.should.be.equal(monthlyResults.body._id);
                         results.body[1].objectId.should.be.equal(weeklyResults.body._id);
-                        results.body[2].objectId.should.be.equal(monthlyResults.body._id);
+                        results.body[2].objectId.should.be.equal(dailyResults.body._id);
                         done();
                     });
             });

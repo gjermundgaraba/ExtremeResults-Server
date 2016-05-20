@@ -3,6 +3,9 @@ describe("Register Controller", function() {
         jwtMock,
         responseMock,
         requestMock,
+        hashMock,
+        hashValueMock,
+        saltValueMock,
         UserMock;
 
     beforeEach(function() {
@@ -29,7 +32,13 @@ describe("Register Controller", function() {
             json: function () {}
         };
 
-        registerController = require('../../../controllers/registerController')(UserMock, jwtMock);
+        hashValueMock = "abc";
+        saltValueMock = "123";
+        hashMock = function (pwd, cb) {
+            cb(undefined, saltValueMock, hashValueMock);
+        };
+
+        registerController = require('../../../controllers/registerController')(UserMock, jwtMock, undefined, hashMock);
     });
 
     describe('/register', function () {
