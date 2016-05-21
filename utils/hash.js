@@ -24,7 +24,7 @@ exports.hash = function (pwd, salt, fn) {
         crypto.randomBytes(len, function(err, salt){
             if (err) return fn(err);
             salt = salt.toString('base64');
-            crypto.pbkdf2(pwd.toString(), salt, iterations, len, function(err, hash){
+            crypto.pbkdf2(pwd, salt, iterations, len, function(err, hash){
                 if (err) return fn(err);
                 fn(null, salt, hash.toString('base64'));
             });
