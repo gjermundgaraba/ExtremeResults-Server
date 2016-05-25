@@ -32,7 +32,17 @@ var reflectionController = function (Reflection) {
             user: req.user._id
         };
 
-        Reflection.find(query, function (error, reflections) {
+        var mongooseQuery = Reflection.find(query);
+
+        if (req.query.limit) {
+            mongooseQuery.limit(parseInt(req.query.limit));
+        }
+
+        if (req.query.offset) {
+            mongooseQuery.skip(parseInt(req.query.offset));
+        }
+
+        mongooseQuery.exec(function (error, reflections) {
             if (error) {
                 res.status(500).send(error);
             } else {

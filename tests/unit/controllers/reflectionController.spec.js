@@ -2,6 +2,7 @@ describe("Reflection Controller", function() {
     var reflectionController,
         responseMock,
         requestMock,
+        mongooseQueryMock,
         ReflectionMock;
 
     beforeEach(function() {
@@ -13,7 +14,14 @@ describe("Reflection Controller", function() {
 
         requestMock = {
             user: {},
-            body: {}
+            body: {},
+            query: {}
+        };
+
+        mongooseQueryMock = {
+            exec: function () {},
+            limit: function () {},
+            skip: function () {}
         };
 
         responseMock = {
@@ -54,9 +62,11 @@ describe("Reflection Controller", function() {
                         effectiveDate: new Date()
                     }
                 ];
-                spyOn(ReflectionMock, 'find').and.callFake(function (query, callBack) {
+
+                spyOn(mongooseQueryMock, 'exec').and.callFake(function (callBack) {
                     callBack(undefined, fakeReflections);
                 });
+                spyOn(ReflectionMock, 'find').and.returnValue(mongooseQueryMock);
                 spyOn(responseMock, 'json');
                 reflectionController.get(requestMock, responseMock);
 
@@ -87,11 +97,54 @@ describe("Reflection Controller", function() {
                 expect(secondReflection.className).toEqual('Reflection');
             });
 
+            it('should call limit if limit query param is sent in', function () {
+                spyOn(ReflectionMock, 'find').and.returnValue(mongooseQueryMock);
+                spyOn(responseMock, 'json');
+                spyOn(mongooseQueryMock, 'limit');
+                requestMock.query.limit = "10";
+
+                reflectionController.get(requestMock, responseMock);
+
+                expect(mongooseQueryMock.limit).toHaveBeenCalledWith(10);
+            });
+
+            it('should not call limit if limit is not in query param', function () {
+                spyOn(ReflectionMock, 'find').and.returnValue(mongooseQueryMock);
+                spyOn(responseMock, 'json');
+                spyOn(mongooseQueryMock, 'limit');
+
+                reflectionController.get(requestMock, responseMock);
+
+                expect(mongooseQueryMock.limit).not.toHaveBeenCalled();
+            });
+
+            it('should call skip if offset query param is sent in', function () {
+                spyOn(ReflectionMock, 'find').and.returnValue(mongooseQueryMock);
+                spyOn(responseMock, 'json');
+                spyOn(mongooseQueryMock, 'skip');
+                requestMock.query.offset = "10";
+
+                reflectionController.get(requestMock, responseMock);
+
+                expect(mongooseQueryMock.skip).toHaveBeenCalledWith(10);
+            });
+
+            it('should not call skip if skip is not in query param', function () {
+                spyOn(ReflectionMock, 'find').and.returnValue(mongooseQueryMock);
+                spyOn(responseMock, 'json');
+                spyOn(mongooseQueryMock, 'skip');
+
+                reflectionController.get(requestMock, responseMock);
+
+                expect(mongooseQueryMock.skip).not.toHaveBeenCalled();
+            });
+
             it('should send back status code 500 on failure', function () {
                 var error = {};
-                spyOn(ReflectionMock, 'find').and.callFake(function (query, callBack) {
+                spyOn(mongooseQueryMock, 'exec').and.callFake(function (callBack) {
                     callBack(error, undefined);
                 });
+                spyOn(ReflectionMock, 'find').and.returnValue(mongooseQueryMock);
                 spyOn(responseMock, 'status').and.callThrough();
                 spyOn(responseMock, 'send').and.callThrough();
 

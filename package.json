@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "gulp",
+    "debug": "gulp debug",
     "test": "jasmine JASMINE_CONFIG_PATH=./jasmine.json",
     "it": "gulp it"
   },

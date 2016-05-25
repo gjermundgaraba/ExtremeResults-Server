@@ -22,6 +22,21 @@ gulp.task('default', function () {
     });
 });
 
+gulp.task('debug', function () {
+    nodemon({
+        exec: 'node-inspector & node --debug',
+        script: 'app.js',
+        ext: 'js',
+        env: {
+            MONGO_SERVER: 'mongodb://localhost/xr',
+            PORT: 4321
+        },
+        ignore: ['./node_modules/**', 'spec/**']
+    }).on('restart', function () {
+        console.log('Restarting...');
+    });
+});
+
 gulp.task('pre-test', function () {
     return gulp.src(['controllers/**/*.js', 'models/**/*.js', 'routes/**/*.js', 'app.js'])
         // Covering files
@@ -39,7 +54,7 @@ gulp.task('it', ['pre-test'], function () {
            PORT: 3333
        }
     });
-    gulp.src('tests/it/*.js', {read: false})
+    gulp.src('tests/it/reflectionIT.js', {read: false})
         .pipe(mocha({
             reporter: 'nyan'
         }))

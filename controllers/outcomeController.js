@@ -29,7 +29,17 @@ var outcomeController = function (Outcome) {
             user: req.user._id
         };
 
-        Outcome.find(query, function (error, outcomes) {
+        var mongooseQuery = Outcome.find(query);
+
+        if (req.query.limit) {
+            mongooseQuery.limit(parseInt(req.query.limit));
+        }
+
+        if (req.query.offset) {
+            mongooseQuery.skip(parseInt(req.query.offset));
+        }
+
+        mongooseQuery.exec(function (error, outcomes) {
             if (error) {
                 res.status(500).send(error);
             } else {

@@ -364,6 +364,125 @@ describe('Reflection ITs', function () {
                     });
             });
 
+            it('should skip reflections if offset param is sent in', function (done) {
+                agent.get('/api/reflections')
+                    .query({ offset: '1' })
+                    .set('Authorization', 'bearer ' + token)
+                    .expect(200)
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(2);
+
+                        results.body[0].should.have.property('objectId');
+                        results.body[0].should.have.property('typeName', reflection2.typeName);
+                        results.body[0].should.have.property('firstThingThatWentWell', reflection2.firstThingThatWentWell);
+                        results.body[0].should.have.property('secondThingThatWentWell', reflection2.secondThingThatWentWell);
+                        results.body[0].should.have.property('thirdThingThatWentWell', reflection2.thirdThingThatWentWell);
+                        results.body[0].should.have.property('firstThingToImprove', reflection2.firstThingToImprove);
+                        results.body[0].should.have.property('secondThingToImprove', reflection2.secondThingToImprove);
+                        results.body[0].should.have.property('thirdThingToImprove', reflection2.thirdThingToImprove);
+                        results.body[0].should.have.property('className', 'Reflection');
+                        results.body[0].should.have.property('effectiveDate');
+
+                        results.body[1].should.have.property('objectId');
+                        results.body[1].should.have.property('typeName', reflection3.typeName);
+                        results.body[1].should.have.property('firstThingThatWentWell', reflection3.firstThingThatWentWell);
+                        results.body[1].should.have.property('secondThingThatWentWell', reflection3.secondThingThatWentWell);
+                        results.body[1].should.have.property('thirdThingThatWentWell', reflection3.thirdThingThatWentWell);
+                        results.body[1].should.have.property('firstThingToImprove', reflection3.firstThingToImprove);
+                        results.body[1].should.have.property('secondThingToImprove', reflection3.secondThingToImprove);
+                        results.body[1].should.have.property('thirdThingToImprove', reflection3.thirdThingToImprove);
+                        results.body[1].should.have.property('className', 'Reflection');
+                        results.body[1].should.have.property('effectiveDate');
+                        done();
+                    });
+            });
+
+            it('should limit reflections if limit param is sent in', function (done) {
+                agent.get('/api/reflections')
+                    .query({ limit: '2' })
+                    .set('Authorization', 'bearer ' + token)
+                    .expect(200)
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(2);
+
+                        results.body[0].should.have.property('objectId');
+                        results.body[0].should.have.property('typeName', reflection1.typeName);
+                        results.body[0].should.have.property('firstThingThatWentWell', reflection1.firstThingThatWentWell);
+                        results.body[0].should.have.property('secondThingThatWentWell', reflection1.secondThingThatWentWell);
+                        results.body[0].should.have.property('thirdThingThatWentWell', reflection1.thirdThingThatWentWell);
+                        results.body[0].should.have.property('firstThingToImprove', reflection1.firstThingToImprove);
+                        results.body[0].should.have.property('secondThingToImprove', reflection1.secondThingToImprove);
+                        results.body[0].should.have.property('thirdThingToImprove', reflection1.thirdThingToImprove);
+                        results.body[0].should.have.property('className', 'Reflection');
+                        results.body[0].should.have.property('effectiveDate');
+
+                        results.body[1].should.have.property('objectId');
+                        results.body[1].should.have.property('typeName', reflection2.typeName);
+                        results.body[1].should.have.property('firstThingThatWentWell', reflection2.firstThingThatWentWell);
+                        results.body[1].should.have.property('secondThingThatWentWell', reflection2.secondThingThatWentWell);
+                        results.body[1].should.have.property('thirdThingThatWentWell', reflection2.thirdThingThatWentWell);
+                        results.body[1].should.have.property('firstThingToImprove', reflection2.firstThingToImprove);
+                        results.body[1].should.have.property('secondThingToImprove', reflection2.secondThingToImprove);
+                        results.body[1].should.have.property('thirdThingToImprove', reflection2.thirdThingToImprove);
+                        results.body[1].should.have.property('className', 'Reflection');
+                        results.body[1].should.have.property('effectiveDate');
+
+                        done();
+                    });
+            });
+
+            it('should paginate', function (done) {
+                agent.get('/api/reflections')
+                    .query({ limit: '2', offset: '0' })
+                    .set('Authorization', 'bearer ' + token)
+                    .expect(200)
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(2);
+
+                        results.body[0].should.have.property('objectId');
+                        results.body[0].should.have.property('typeName', reflection1.typeName);
+                        results.body[0].should.have.property('firstThingThatWentWell', reflection1.firstThingThatWentWell);
+                        results.body[0].should.have.property('secondThingThatWentWell', reflection1.secondThingThatWentWell);
+                        results.body[0].should.have.property('thirdThingThatWentWell', reflection1.thirdThingThatWentWell);
+                        results.body[0].should.have.property('firstThingToImprove', reflection1.firstThingToImprove);
+                        results.body[0].should.have.property('secondThingToImprove', reflection1.secondThingToImprove);
+                        results.body[0].should.have.property('thirdThingToImprove', reflection1.thirdThingToImprove);
+                        results.body[0].should.have.property('className', 'Reflection');
+                        results.body[0].should.have.property('effectiveDate');
+
+                        results.body[1].should.have.property('objectId');
+                        results.body[1].should.have.property('typeName', reflection2.typeName);
+                        results.body[1].should.have.property('firstThingThatWentWell', reflection2.firstThingThatWentWell);
+                        results.body[1].should.have.property('secondThingThatWentWell', reflection2.secondThingThatWentWell);
+                        results.body[1].should.have.property('thirdThingThatWentWell', reflection2.thirdThingThatWentWell);
+                        results.body[1].should.have.property('firstThingToImprove', reflection2.firstThingToImprove);
+                        results.body[1].should.have.property('secondThingToImprove', reflection2.secondThingToImprove);
+                        results.body[1].should.have.property('thirdThingToImprove', reflection2.thirdThingToImprove);
+                        results.body[1].should.have.property('className', 'Reflection');
+                        results.body[1].should.have.property('effectiveDate');
+
+                        return  agent.get('/api/reflections')
+                            .query({ limit: '2', offset: '2' })
+                            .set('Authorization', 'bearer ' + token)
+                            .expect(200);
+                    })
+                    .then(function (results) {
+                        results.body.length.should.be.exactly(1);
+
+                        results.body[0].should.have.property('objectId');
+                        results.body[0].should.have.property('typeName', reflection3.typeName);
+                        results.body[0].should.have.property('firstThingThatWentWell', reflection3.firstThingThatWentWell);
+                        results.body[0].should.have.property('secondThingThatWentWell', reflection3.secondThingThatWentWell);
+                        results.body[0].should.have.property('thirdThingThatWentWell', reflection3.thirdThingThatWentWell);
+                        results.body[0].should.have.property('firstThingToImprove', reflection3.firstThingToImprove);
+                        results.body[0].should.have.property('secondThingToImprove', reflection3.secondThingToImprove);
+                        results.body[0].should.have.property('thirdThingToImprove', reflection3.thirdThingToImprove);
+                        results.body[0].should.have.property('className', 'Reflection');
+                        results.body[0].should.have.property('effectiveDate');
+                        done();
+                    });
+            });
+
             it('should return reflections only for the user', function (done) {
                 agent.get('/api/reflections')
                     .set('Authorization', 'bearer ' + otherUserToken)
