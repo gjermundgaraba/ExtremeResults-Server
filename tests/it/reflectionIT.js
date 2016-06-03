@@ -1,5 +1,6 @@
 var should = require('should'),
     request = require('supertest-as-promised'),
+    moment = require('moment'),
     server,
     mongoose = require('mongoose'),
     Reflection,
@@ -11,7 +12,7 @@ var should = require('should'),
 
 describe('Reflection ITs', function () {
 
-    beforeEach(function (done) {
+    beforeEach(function () {
         delete require.cache[require.resolve('../../app.js')];
         server = require('../../app.js');
         agent = request.agent(server);
@@ -28,7 +29,7 @@ describe('Reflection ITs', function () {
             password: 'password'
         };
 
-        agent.post('/api/register')
+        return agent.post('/api/register')
             .send(itUser)
             .then(function () {
                 return agent.post('/api/register')
@@ -45,7 +46,6 @@ describe('Reflection ITs', function () {
             })
             .then(function (results) {
                 otherUserToken = results.body.token;
-                done();
             });
     });
 
@@ -63,7 +63,7 @@ describe('Reflection ITs', function () {
     describe('/reflections', function () {
 
         describe('post', function () {
-            it('should allow a reflection to be posted properly', function (done) {
+            it('should allow a reflection to be posted properly', function () {
                 var reflection = {
                     typeName: 'Daily',
                     firstThingThatWentWell: 'The First Thing That Went Well',
@@ -75,7 +75,7 @@ describe('Reflection ITs', function () {
                     effectiveDate: new Date()
                 };
 
-                agent.post('/api/reflections')
+                return agent.post('/api/reflections')
                     .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(201)
@@ -89,7 +89,6 @@ describe('Reflection ITs', function () {
                         results.body.should.have.property('secondThingToImprove', reflection.secondThingToImprove);
                         results.body.should.have.property('thirdThingToImprove', reflection.thirdThingToImprove);
                         results.body.should.have.property('effectiveDate');
-                        done();
                     });
             });
 
@@ -253,7 +252,7 @@ describe('Reflection ITs', function () {
                 reflection3,
                 otherUsersReflection;
 
-            beforeEach(function (done) {
+            beforeEach(function () {
                 reflection1 = {
                     typeName: 'Weekly',
                     firstThingThatWentWell: 'The First Weekly Thing That Went Well',
@@ -262,7 +261,7 @@ describe('Reflection ITs', function () {
                     firstThingToImprove: 'The First Weekly Thing To Improve',
                     secondThingToImprove: 'The Second Weekly Thing To Improve',
                     thirdThingToImprove: 'The Third Weekly Thing To Improve',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(1, 'minutes').toDate()
                 };
 
                 reflection2 = {
@@ -273,7 +272,7 @@ describe('Reflection ITs', function () {
                     firstThingToImprove: 'The First Monthly Thing To Improve',
                     secondThingToImprove: 'The Second Monthly Thing To Improve',
                     thirdThingToImprove: 'The Third Monthly Thing To Improve',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(2, 'minutes').toDate()
                 };
 
                 reflection3 = {
@@ -284,7 +283,7 @@ describe('Reflection ITs', function () {
                     firstThingToImprove: 'The First Yearly Thing To Improve',
                     secondThingToImprove: 'The Second Yearly Thing To Improve',
                     thirdThingToImprove: 'The Third Yearly Thing To Improve',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(3, 'minutes').toDate()
                 };
 
                 otherUsersReflection = {
@@ -295,10 +294,10 @@ describe('Reflection ITs', function () {
                     firstThingToImprove: 'The First Other Users Weekly Thing To Improve',
                     secondThingToImprove: 'The Second Other Users Weekly Thing To Improve',
                     thirdThingToImprove: 'The Third Other Users Weekly Thing To Improve',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(4, 'minutes').toDate()
                 };
 
-                agent.post('/api/reflections')
+                return agent.post('/api/reflections')
                     .set('Authorization', 'bearer ' + token)
                     .send(reflection1)
                     .then(function () {
@@ -315,27 +314,24 @@ describe('Reflection ITs', function () {
                         return agent.post('/api/reflections')
                             .set('Authorization', 'bearer ' + otherUserToken)
                             .send(otherUsersReflection);
-                    })
-                    .then(function () {
-                        done();
                     });
             });
 
-            it('should get all reflections', function (done) {
-                agent.get('/api/reflections')
+            it('should get all reflections', function () {
+                return agent.get('/api/reflections')
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
                     .then(function (results) {
                         results.body.length.should.be.exactly(3);
 
                         results.body[0].should.have.property('objectId');
-                        results.body[0].should.have.property('typeName', reflection1.typeName);
-                        results.body[0].should.have.property('firstThingThatWentWell', reflection1.firstThingThatWentWell);
-                        results.body[0].should.have.property('secondThingThatWentWell', reflection1.secondThingThatWentWell);
-                        results.body[0].should.have.property('thirdThingThatWentWell', reflection1.thirdThingThatWentWell);
-                        results.body[0].should.have.property('firstThingToImprove', reflection1.firstThingToImprove);
-                        results.body[0].should.have.property('secondThingToImprove', reflection1.secondThingToImprove);
-                        results.body[0].should.have.property('thirdThingToImprove', reflection1.thirdThingToImprove);
+                        results.body[0].should.have.property('typeName', reflection3.typeName);
+                        results.body[0].should.have.property('firstThingThatWentWell', reflection3.firstThingThatWentWell);
+                        results.body[0].should.have.property('secondThingThatWentWell', reflection3.secondThingThatWentWell);
+                        results.body[0].should.have.property('thirdThingThatWentWell', reflection3.thirdThingThatWentWell);
+                        results.body[0].should.have.property('firstThingToImprove', reflection3.firstThingToImprove);
+                        results.body[0].should.have.property('secondThingToImprove', reflection3.secondThingToImprove);
+                        results.body[0].should.have.property('thirdThingToImprove', reflection3.thirdThingToImprove);
                         results.body[0].should.have.property('className', 'Reflection');
                         results.body[0].should.have.property('effectiveDate');
 
@@ -351,21 +347,20 @@ describe('Reflection ITs', function () {
                         results.body[1].should.have.property('effectiveDate');
 
                         results.body[2].should.have.property('objectId');
-                        results.body[2].should.have.property('typeName', reflection3.typeName);
-                        results.body[2].should.have.property('firstThingThatWentWell', reflection3.firstThingThatWentWell);
-                        results.body[2].should.have.property('secondThingThatWentWell', reflection3.secondThingThatWentWell);
-                        results.body[2].should.have.property('thirdThingThatWentWell', reflection3.thirdThingThatWentWell);
-                        results.body[2].should.have.property('firstThingToImprove', reflection3.firstThingToImprove);
-                        results.body[2].should.have.property('secondThingToImprove', reflection3.secondThingToImprove);
-                        results.body[2].should.have.property('thirdThingToImprove', reflection3.thirdThingToImprove);
+                        results.body[2].should.have.property('typeName', reflection1.typeName);
+                        results.body[2].should.have.property('firstThingThatWentWell', reflection1.firstThingThatWentWell);
+                        results.body[2].should.have.property('secondThingThatWentWell', reflection1.secondThingThatWentWell);
+                        results.body[2].should.have.property('thirdThingThatWentWell', reflection1.thirdThingThatWentWell);
+                        results.body[2].should.have.property('firstThingToImprove', reflection1.firstThingToImprove);
+                        results.body[2].should.have.property('secondThingToImprove', reflection1.secondThingToImprove);
+                        results.body[2].should.have.property('thirdThingToImprove', reflection1.thirdThingToImprove);
                         results.body[2].should.have.property('className', 'Reflection');
                         results.body[2].should.have.property('effectiveDate');
-                        done();
                     });
             });
 
-            it('should skip reflections if offset param is sent in', function (done) {
-                agent.get('/api/reflections')
+            it('should skip reflections if offset param is sent in', function () {
+                return agent.get('/api/reflections')
                     .query({ offset: '1' })
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
@@ -384,21 +379,20 @@ describe('Reflection ITs', function () {
                         results.body[0].should.have.property('effectiveDate');
 
                         results.body[1].should.have.property('objectId');
-                        results.body[1].should.have.property('typeName', reflection3.typeName);
-                        results.body[1].should.have.property('firstThingThatWentWell', reflection3.firstThingThatWentWell);
-                        results.body[1].should.have.property('secondThingThatWentWell', reflection3.secondThingThatWentWell);
-                        results.body[1].should.have.property('thirdThingThatWentWell', reflection3.thirdThingThatWentWell);
-                        results.body[1].should.have.property('firstThingToImprove', reflection3.firstThingToImprove);
-                        results.body[1].should.have.property('secondThingToImprove', reflection3.secondThingToImprove);
-                        results.body[1].should.have.property('thirdThingToImprove', reflection3.thirdThingToImprove);
+                        results.body[1].should.have.property('typeName', reflection1.typeName);
+                        results.body[1].should.have.property('firstThingThatWentWell', reflection1.firstThingThatWentWell);
+                        results.body[1].should.have.property('secondThingThatWentWell', reflection1.secondThingThatWentWell);
+                        results.body[1].should.have.property('thirdThingThatWentWell', reflection1.thirdThingThatWentWell);
+                        results.body[1].should.have.property('firstThingToImprove', reflection1.firstThingToImprove);
+                        results.body[1].should.have.property('secondThingToImprove', reflection1.secondThingToImprove);
+                        results.body[1].should.have.property('thirdThingToImprove', reflection1.thirdThingToImprove);
                         results.body[1].should.have.property('className', 'Reflection');
                         results.body[1].should.have.property('effectiveDate');
-                        done();
                     });
             });
 
-            it('should limit reflections if limit param is sent in', function (done) {
-                agent.get('/api/reflections')
+            it('should limit reflections if limit param is sent in', function () {
+                return agent.get('/api/reflections')
                     .query({ limit: '2' })
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
@@ -406,13 +400,13 @@ describe('Reflection ITs', function () {
                         results.body.length.should.be.exactly(2);
 
                         results.body[0].should.have.property('objectId');
-                        results.body[0].should.have.property('typeName', reflection1.typeName);
-                        results.body[0].should.have.property('firstThingThatWentWell', reflection1.firstThingThatWentWell);
-                        results.body[0].should.have.property('secondThingThatWentWell', reflection1.secondThingThatWentWell);
-                        results.body[0].should.have.property('thirdThingThatWentWell', reflection1.thirdThingThatWentWell);
-                        results.body[0].should.have.property('firstThingToImprove', reflection1.firstThingToImprove);
-                        results.body[0].should.have.property('secondThingToImprove', reflection1.secondThingToImprove);
-                        results.body[0].should.have.property('thirdThingToImprove', reflection1.thirdThingToImprove);
+                        results.body[0].should.have.property('typeName', reflection3.typeName);
+                        results.body[0].should.have.property('firstThingThatWentWell', reflection3.firstThingThatWentWell);
+                        results.body[0].should.have.property('secondThingThatWentWell', reflection3.secondThingThatWentWell);
+                        results.body[0].should.have.property('thirdThingThatWentWell', reflection3.thirdThingThatWentWell);
+                        results.body[0].should.have.property('firstThingToImprove', reflection3.firstThingToImprove);
+                        results.body[0].should.have.property('secondThingToImprove', reflection3.secondThingToImprove);
+                        results.body[0].should.have.property('thirdThingToImprove', reflection3.thirdThingToImprove);
                         results.body[0].should.have.property('className', 'Reflection');
                         results.body[0].should.have.property('effectiveDate');
 
@@ -426,13 +420,11 @@ describe('Reflection ITs', function () {
                         results.body[1].should.have.property('thirdThingToImprove', reflection2.thirdThingToImprove);
                         results.body[1].should.have.property('className', 'Reflection');
                         results.body[1].should.have.property('effectiveDate');
-
-                        done();
                     });
             });
 
-            it('should paginate', function (done) {
-                agent.get('/api/reflections')
+            it('should paginate', function () {
+                return agent.get('/api/reflections')
                     .query({ limit: '2', offset: '0' })
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
@@ -440,13 +432,13 @@ describe('Reflection ITs', function () {
                         results.body.length.should.be.exactly(2);
 
                         results.body[0].should.have.property('objectId');
-                        results.body[0].should.have.property('typeName', reflection1.typeName);
-                        results.body[0].should.have.property('firstThingThatWentWell', reflection1.firstThingThatWentWell);
-                        results.body[0].should.have.property('secondThingThatWentWell', reflection1.secondThingThatWentWell);
-                        results.body[0].should.have.property('thirdThingThatWentWell', reflection1.thirdThingThatWentWell);
-                        results.body[0].should.have.property('firstThingToImprove', reflection1.firstThingToImprove);
-                        results.body[0].should.have.property('secondThingToImprove', reflection1.secondThingToImprove);
-                        results.body[0].should.have.property('thirdThingToImprove', reflection1.thirdThingToImprove);
+                        results.body[0].should.have.property('typeName', reflection3.typeName);
+                        results.body[0].should.have.property('firstThingThatWentWell', reflection3.firstThingThatWentWell);
+                        results.body[0].should.have.property('secondThingThatWentWell', reflection3.secondThingThatWentWell);
+                        results.body[0].should.have.property('thirdThingThatWentWell', reflection3.thirdThingThatWentWell);
+                        results.body[0].should.have.property('firstThingToImprove', reflection3.firstThingToImprove);
+                        results.body[0].should.have.property('secondThingToImprove', reflection3.secondThingToImprove);
+                        results.body[0].should.have.property('thirdThingToImprove', reflection3.thirdThingToImprove);
                         results.body[0].should.have.property('className', 'Reflection');
                         results.body[0].should.have.property('effectiveDate');
 
@@ -470,21 +462,20 @@ describe('Reflection ITs', function () {
                         results.body.length.should.be.exactly(1);
 
                         results.body[0].should.have.property('objectId');
-                        results.body[0].should.have.property('typeName', reflection3.typeName);
-                        results.body[0].should.have.property('firstThingThatWentWell', reflection3.firstThingThatWentWell);
-                        results.body[0].should.have.property('secondThingThatWentWell', reflection3.secondThingThatWentWell);
-                        results.body[0].should.have.property('thirdThingThatWentWell', reflection3.thirdThingThatWentWell);
-                        results.body[0].should.have.property('firstThingToImprove', reflection3.firstThingToImprove);
-                        results.body[0].should.have.property('secondThingToImprove', reflection3.secondThingToImprove);
-                        results.body[0].should.have.property('thirdThingToImprove', reflection3.thirdThingToImprove);
+                        results.body[0].should.have.property('typeName', reflection1.typeName);
+                        results.body[0].should.have.property('firstThingThatWentWell', reflection1.firstThingThatWentWell);
+                        results.body[0].should.have.property('secondThingThatWentWell', reflection1.secondThingThatWentWell);
+                        results.body[0].should.have.property('thirdThingThatWentWell', reflection1.thirdThingThatWentWell);
+                        results.body[0].should.have.property('firstThingToImprove', reflection1.firstThingToImprove);
+                        results.body[0].should.have.property('secondThingToImprove', reflection1.secondThingToImprove);
+                        results.body[0].should.have.property('thirdThingToImprove', reflection1.thirdThingToImprove);
                         results.body[0].should.have.property('className', 'Reflection');
                         results.body[0].should.have.property('effectiveDate');
-                        done();
                     });
             });
 
-            it('should return reflections only for the user', function (done) {
-                agent.get('/api/reflections')
+            it('should return reflections only for the user', function () {
+                return agent.get('/api/reflections')
                     .set('Authorization', 'bearer ' + otherUserToken)
                     .expect(200)
                     .then(function (results) {
@@ -500,8 +491,6 @@ describe('Reflection ITs', function () {
                         results.body[0].should.have.property('thirdThingToImprove', otherUsersReflection.thirdThingToImprove);
                         results.body[0].should.have.property('className', 'Reflection');
                         results.body[0].should.have.property('effectiveDate');
-
-                        done();
                     });
             });
 
@@ -518,7 +507,7 @@ describe('Reflection ITs', function () {
             originalReflection,
             originalOtherUsersReflection;
 
-        beforeEach(function (done) {
+        beforeEach(function () {
             reflection = {
                 typeName: 'Weekly',
                 firstThingThatWentWell: 'The First Weekly Thing That Went Well',
@@ -541,7 +530,7 @@ describe('Reflection ITs', function () {
                 effectiveDate: new Date()
             };
 
-            agent.post('/api/reflections')
+            return agent.post('/api/reflections')
                 .set('Authorization', 'bearer ' + token)
                 .send(reflection)
                 .then(function (results) {
@@ -553,14 +542,13 @@ describe('Reflection ITs', function () {
                 })
                 .then (function (results) {
                     originalOtherUsersReflection = results.body;
-                    done();
                 })
         });
 
         describe('get', function () {
 
-            it('should get the reflection back', function (done) {
-                agent.get('/api/reflections/' + originalReflection._id)
+            it('should get the reflection back', function () {
+                return agent.get('/api/reflections/' + originalReflection._id)
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
                     .then(function (results) {
@@ -573,7 +561,6 @@ describe('Reflection ITs', function () {
                         results.body.should.have.property('secondThingToImprove', originalReflection.secondThingToImprove);
                         results.body.should.have.property('thirdThingToImprove', originalReflection.thirdThingToImprove);
                         results.body.should.have.property('effectiveDate', originalReflection.effectiveDate);
-                        done();
                     });
             });
 
@@ -598,7 +585,7 @@ describe('Reflection ITs', function () {
 
         describe('put', function () {
 
-            it('should be able to put an object', function (done) {
+            it('should be able to put an object', function () {
                 var newTypeName = 'Monthly';
                 var newFirstThingThatWentWell = 'The First Monthly Thing That Went Well';
                 var newSecondThingThatWentWell = 'The Second Monthly Thing That Went Well';
@@ -615,7 +602,7 @@ describe('Reflection ITs', function () {
                 reflection.secondThingToImprove = newSecondThingToImprove;
                 reflection.thirdThingToImprove = newThirdThingToImprove;
 
-                agent.put('/api/reflections/' + originalReflection._id)
+                return agent.put('/api/reflections/' + originalReflection._id)
                     .set('Authorization', 'bearer ' + token)
                     .send(reflection)
                     .expect(200)
@@ -628,7 +615,6 @@ describe('Reflection ITs', function () {
                         results.body.should.have.property('secondThingToImprove', newSecondThingToImprove);
                         results.body.should.have.property('thirdThingToImprove', newThirdThingToImprove);
                         results.body.should.have.property('effectiveDate');
-                        done();
                     });
             });
 

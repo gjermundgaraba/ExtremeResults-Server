@@ -1,5 +1,6 @@
 var should = require('should'),
     request = require('supertest-as-promised'),
+    moment = require('moment'),
     server,
     mongoose = require('mongoose'),
     Outcome,
@@ -12,7 +13,7 @@ var should = require('should'),
 describe('Outcome ITs', function () {
 
 
-    beforeEach(function (done) {
+    beforeEach(function () {
         delete require.cache[require.resolve('../../app.js')];
         server = require('../../app.js');
         agent = request.agent(server);
@@ -29,7 +30,7 @@ describe('Outcome ITs', function () {
             password: 'password'
         };
 
-        agent.post('/api/register')
+        return agent.post('/api/register')
             .send(itUser)
             .then(function () {
                 return agent.post('/api/register')
@@ -46,7 +47,6 @@ describe('Outcome ITs', function () {
             })
             .then(function (results) {
                 otherUserToken = results.body.token;
-                done();
             });
     });
 
@@ -178,7 +178,7 @@ describe('Outcome ITs', function () {
                 outcome3,
                 otherUsersOutcome;
 
-            beforeEach(function (done) {
+            beforeEach(function () {
                 outcome1 = {
                     typeName: 'Daily',
                     firstStory: 'The First Daily Story',
@@ -192,7 +192,7 @@ describe('Outcome ITs', function () {
                     firstStory: 'The First Weekly Story',
                     secondStory: 'The Second Weekly Story',
                     thirdStory: 'The Third Weekly Story',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(1, 'minutes').toDate()
                 };
 
                 outcome3 = {
@@ -200,7 +200,7 @@ describe('Outcome ITs', function () {
                     firstStory: 'The First Monthly Story',
                     secondStory: 'The Second Monthly Story',
                     thirdStory: 'The Third Monthly Story',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(2, 'minutes').toDate()
                 };
 
                 otherUsersOutcome = {
@@ -208,10 +208,10 @@ describe('Outcome ITs', function () {
                     firstStory: 'The First Other Daily Story',
                     secondStory: 'The Second Other Daily Story',
                     thirdStory: 'The Third Other Daily Story',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(3, 'minutes').toDate()
                 };
 
-                agent.post('/api/outcomes')
+                return agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(outcome1)
                     .then(function () {
@@ -228,24 +228,21 @@ describe('Outcome ITs', function () {
                         return agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + otherUserToken)
                             .send(otherUsersOutcome);
-                    })
-                    .then(function () {
-                        done();
                     });
             });
 
-            it('should get all outcomes', function (done) {
-                agent.get('/api/outcomes')
+            it('should get all outcomes', function () {
+                return agent.get('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
                     .then(function (results) {
                         results.body.length.should.be.exactly(3);
 
                         results.body[0].should.have.property('objectId');
-                        results.body[0].should.have.property('typeName', outcome1.typeName);
-                        results.body[0].should.have.property('firstStory', outcome1.firstStory);
-                        results.body[0].should.have.property('secondStory', outcome1.secondStory);
-                        results.body[0].should.have.property('thirdStory', outcome1.thirdStory);
+                        results.body[0].should.have.property('typeName', outcome3.typeName);
+                        results.body[0].should.have.property('firstStory', outcome3.firstStory);
+                        results.body[0].should.have.property('secondStory', outcome3.secondStory);
+                        results.body[0].should.have.property('thirdStory', outcome3.thirdStory);
                         results.body[0].should.have.property('className', 'Outcome');
                         results.body[0].should.have.property('effectiveDate');
 
@@ -258,18 +255,17 @@ describe('Outcome ITs', function () {
                         results.body[1].should.have.property('effectiveDate');
 
                         results.body[2].should.have.property('objectId');
-                        results.body[2].should.have.property('typeName', outcome3.typeName);
-                        results.body[2].should.have.property('firstStory', outcome3.firstStory);
-                        results.body[2].should.have.property('secondStory', outcome3.secondStory);
-                        results.body[2].should.have.property('thirdStory', outcome3.thirdStory);
+                        results.body[2].should.have.property('typeName', outcome1.typeName);
+                        results.body[2].should.have.property('firstStory', outcome1.firstStory);
+                        results.body[2].should.have.property('secondStory', outcome1.secondStory);
+                        results.body[2].should.have.property('thirdStory', outcome1.thirdStory);
                         results.body[2].should.have.property('className', 'Outcome');
                         results.body[2].should.have.property('effectiveDate');
-                        done();
                     });
             });
 
-            it('should skip outcomes if offset param is sent in', function (done) {
-                agent.get('/api/outcomes')
+            it('should skip outcomes if offset param is sent in', function () {
+                return agent.get('/api/outcomes')
                     .query({ offset: '1' })
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
@@ -285,18 +281,17 @@ describe('Outcome ITs', function () {
                         results.body[0].should.have.property('effectiveDate');
 
                         results.body[1].should.have.property('objectId');
-                        results.body[1].should.have.property('typeName', outcome3.typeName);
-                        results.body[1].should.have.property('firstStory', outcome3.firstStory);
-                        results.body[1].should.have.property('secondStory', outcome3.secondStory);
-                        results.body[1].should.have.property('thirdStory', outcome3.thirdStory);
+                        results.body[1].should.have.property('typeName', outcome1.typeName);
+                        results.body[1].should.have.property('firstStory', outcome1.firstStory);
+                        results.body[1].should.have.property('secondStory', outcome1.secondStory);
+                        results.body[1].should.have.property('thirdStory', outcome1.thirdStory);
                         results.body[1].should.have.property('className', 'Outcome');
                         results.body[1].should.have.property('effectiveDate');
-                        done();
                     });
             });
 
-            it('should limit outcomes if limit param is sent in', function (done) {
-                agent.get('/api/outcomes')
+            it('should limit outcomes if limit param is sent in', function () {
+                return agent.get('/api/outcomes')
                     .query({ limit: '2' })
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
@@ -304,10 +299,10 @@ describe('Outcome ITs', function () {
                         results.body.length.should.be.exactly(2);
 
                         results.body[0].should.have.property('objectId');
-                        results.body[0].should.have.property('typeName', outcome1.typeName);
-                        results.body[0].should.have.property('firstStory', outcome1.firstStory);
-                        results.body[0].should.have.property('secondStory', outcome1.secondStory);
-                        results.body[0].should.have.property('thirdStory', outcome1.thirdStory);
+                        results.body[0].should.have.property('typeName', outcome3.typeName);
+                        results.body[0].should.have.property('firstStory', outcome3.firstStory);
+                        results.body[0].should.have.property('secondStory', outcome3.secondStory);
+                        results.body[0].should.have.property('thirdStory', outcome3.thirdStory);
                         results.body[0].should.have.property('className', 'Outcome');
                         results.body[0].should.have.property('effectiveDate');
 
@@ -318,13 +313,11 @@ describe('Outcome ITs', function () {
                         results.body[1].should.have.property('thirdStory', outcome2.thirdStory);
                         results.body[1].should.have.property('className', 'Outcome');
                         results.body[1].should.have.property('effectiveDate');
-
-                        done();
                     });
             });
 
-            it('should paginate', function (done) {
-                agent.get('/api/outcomes')
+            it('should paginate', function () {
+                return agent.get('/api/outcomes')
                     .query({ limit: '2', offset: '0' })
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
@@ -332,10 +325,10 @@ describe('Outcome ITs', function () {
                         results.body.length.should.be.exactly(2);
 
                         results.body[0].should.have.property('objectId');
-                        results.body[0].should.have.property('typeName', outcome1.typeName);
-                        results.body[0].should.have.property('firstStory', outcome1.firstStory);
-                        results.body[0].should.have.property('secondStory', outcome1.secondStory);
-                        results.body[0].should.have.property('thirdStory', outcome1.thirdStory);
+                        results.body[0].should.have.property('typeName', outcome3.typeName);
+                        results.body[0].should.have.property('firstStory', outcome3.firstStory);
+                        results.body[0].should.have.property('secondStory', outcome3.secondStory);
+                        results.body[0].should.have.property('thirdStory', outcome3.thirdStory);
                         results.body[0].should.have.property('className', 'Outcome');
                         results.body[0].should.have.property('effectiveDate');
 
@@ -356,18 +349,17 @@ describe('Outcome ITs', function () {
                         results.body.length.should.be.exactly(1);
 
                         results.body[0].should.have.property('objectId');
-                        results.body[0].should.have.property('typeName', outcome3.typeName);
-                        results.body[0].should.have.property('firstStory', outcome3.firstStory);
-                        results.body[0].should.have.property('secondStory', outcome3.secondStory);
-                        results.body[0].should.have.property('thirdStory', outcome3.thirdStory);
+                        results.body[0].should.have.property('typeName', outcome1.typeName);
+                        results.body[0].should.have.property('firstStory', outcome1.firstStory);
+                        results.body[0].should.have.property('secondStory', outcome1.secondStory);
+                        results.body[0].should.have.property('thirdStory', outcome1.thirdStory);
                         results.body[0].should.have.property('className', 'Outcome');
                         results.body[0].should.have.property('effectiveDate');
-                        done();
                     });
             });
 
-            it('should get outcomes only for a single user', function (done) {
-                agent.get('/api/outcomes')
+            it('should get outcomes only for a single user', function () {
+                return agent.get('/api/outcomes')
                     .set('Authorization', 'bearer ' + otherUserToken)
                     .expect(200)
                     .then(function (results) {
@@ -380,8 +372,6 @@ describe('Outcome ITs', function () {
                         results.body[0].should.have.property('thirdStory', otherUsersOutcome.thirdStory);
                         results.body[0].should.have.property('className', 'Outcome');
                         results.body[0].should.have.property('effectiveDate');
-
-                        done();
                     });
             });
 
@@ -398,7 +388,7 @@ describe('Outcome ITs', function () {
             originalOutcome,
             otherUsersOriginalOutcome;
 
-        beforeEach(function (done) {
+        beforeEach(function () {
             outcome = {
                 typeName: 'Daily',
                 firstStory: 'The First Daily Story',
@@ -415,7 +405,7 @@ describe('Outcome ITs', function () {
                 effectiveDate: new Date()
             };
 
-            agent.post('/api/outcomes')
+            return agent.post('/api/outcomes')
                 .set('Authorization', 'bearer ' + token)
                 .send(outcome)
                 .then(function (results) {
@@ -427,14 +417,13 @@ describe('Outcome ITs', function () {
                 })
                 .then(function (results) {
                     otherUsersOriginalOutcome = results.body;
-                    done();
                 })
         });
 
         describe('get', function () {
 
-            it('should get the outcome back', function (done) {
-                agent.get('/api/outcomes/' + originalOutcome._id)
+            it('should get the outcome back', function () {
+                return agent.get('/api/outcomes/' + originalOutcome._id)
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
                     .then(function (results) {
@@ -444,7 +433,6 @@ describe('Outcome ITs', function () {
                         results.body.should.have.property('secondStory', originalOutcome.secondStory);
                         results.body.should.have.property('thirdStory', originalOutcome.thirdStory);
                         results.body.should.have.property('effectiveDate', originalOutcome.effectiveDate);
-                        done();
                     });
             });
 
@@ -469,7 +457,7 @@ describe('Outcome ITs', function () {
 
         describe('put', function () {
 
-            it('should be able to put an object', function (done) {
+            it('should be able to put an object', function () {
                 var newTypeName = 'Monthly';
                 var newFirstStory = 'The First Monthly Story';
                 var newSecondStory = 'The Second Monthly Story';
@@ -480,7 +468,7 @@ describe('Outcome ITs', function () {
                 outcome.secondStory = newSecondStory;
                 outcome.thirdStory = newThirdStory;
 
-                agent.put('/api/outcomes/' + originalOutcome._id)
+                return agent.put('/api/outcomes/' + originalOutcome._id)
                     .set('Authorization', 'bearer ' + token)
                     .send(outcome)
                     .expect(200)
@@ -490,7 +478,6 @@ describe('Outcome ITs', function () {
                         results.body.should.have.property('secondStory', newSecondStory);
                         results.body.should.have.property('thirdStory', newThirdStory);
                         results.body.should.have.property('effectiveDate');
-                        done();
                     });
             });
 

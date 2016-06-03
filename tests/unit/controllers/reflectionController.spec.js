@@ -21,7 +21,8 @@ describe("Reflection Controller", function() {
         mongooseQueryMock = {
             exec: function () {},
             limit: function () {},
-            skip: function () {}
+            skip: function () {},
+            sort: function () {}
         };
 
         responseMock = {
@@ -95,6 +96,16 @@ describe("Reflection Controller", function() {
                 expect(secondReflection.thirdThingToImprove).toEqual(fakeReflections[1].thirdThingToImprove);
                 expect(secondReflection.effectiveDate).toEqual(fakeReflections[1].effectiveDate);
                 expect(secondReflection.className).toEqual('Reflection');
+            });
+
+            it('should call sort descending on effectiveDate', function () {
+                spyOn(ReflectionMock, 'find').and.returnValue(mongooseQueryMock);
+                spyOn(responseMock, 'json');
+                spyOn(mongooseQueryMock, 'sort');
+
+                reflectionController.get(requestMock, responseMock);
+
+                expect(mongooseQueryMock.sort).toHaveBeenCalledWith({effectiveDate: 'descending'});
             });
 
             it('should call limit if limit query param is sent in', function () {

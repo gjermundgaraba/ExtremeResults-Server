@@ -42,6 +42,8 @@ var reflectionController = function (Reflection) {
             mongooseQuery.skip(parseInt(req.query.offset));
         }
 
+        mongooseQuery.sort({effectiveDate: 'descending'});
+
         mongooseQuery.exec(function (error, reflections) {
             if (error) {
                 res.status(500).send(error);

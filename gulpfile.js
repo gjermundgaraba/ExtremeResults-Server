@@ -54,7 +54,7 @@ gulp.task('it', ['pre-test'], function () {
            PORT: 3333
        }
     });
-    gulp.src('tests/it/reflectionIT.js', {read: false})
+    gulp.src('tests/it/*.js', {read: false})
         .pipe(mocha({
             reporter: 'nyan'
         }))

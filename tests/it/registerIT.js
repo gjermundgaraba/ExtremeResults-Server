@@ -25,18 +25,17 @@ describe('Register ITs', function () {
     describe('/register', function () {
 
         describe('post', function () {
-            it('should allow user to register', function (done) {
+            it('should allow user to register', function () {
                 var user = {
                     username: 'test',
                     password: 'ThisIsTestPassword123NotVeryGoodTho'
                 };
 
-                agent.post('/api/register')
+                return agent.post('/api/register')
                     .send(user)
                     .expect(201)
                     .then(function (results) {
                         results.body.should.have.property('token');
-                        done();
                     });
             });
         });

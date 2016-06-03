@@ -38,6 +38,8 @@ var outcomeController = function (Outcome) {
         if (req.query.offset) {
             mongooseQuery.skip(parseInt(req.query.offset));
         }
+        
+        mongooseQuery.sort({effectiveDate: 'descending'});
 
         mongooseQuery.exec(function (error, outcomes) {
             if (error) {

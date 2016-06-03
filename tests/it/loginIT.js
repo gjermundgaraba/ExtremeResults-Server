@@ -16,17 +16,14 @@ describe('Register ITs', function () {
         User = mongoose.model('User');
     });
 
-    beforeEach(function (done) {
+    beforeEach(function () {
         itUser = {
             username: 'test',
             password: 'password'
         };
 
-        agent.post('/api/register')
-            .send(itUser)
-            .then(function () {
-                done();
-            })
+        return agent.post('/api/register')
+            .send(itUser);
     });
 
     afterEach(function (done) {
@@ -39,13 +36,12 @@ describe('Register ITs', function () {
     describe('/login', function () {
 
         describe('post', function () {
-            it('should allow user to login', function (done) {
-                agent.post('/api/login')
+            it('should allow user to login', function () {
+                return agent.post('/api/login')
                     .send(itUser)
                     .expect(200)
                     .then(function (results) {
                         results.body.should.have.property('token');
-                        done();
                     });
             });
 

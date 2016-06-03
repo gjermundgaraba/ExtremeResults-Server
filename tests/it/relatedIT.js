@@ -13,7 +13,7 @@ var should = require('should'),
 
 describe('Related ITs', function () {
 
-    beforeEach(function (done) {
+    beforeEach(function () {
         delete require.cache[require.resolve('../../app.js')];
         server = require('../../app.js');
         agent = request.agent(server);
@@ -31,7 +31,7 @@ describe('Related ITs', function () {
             password: 'password'
         };
 
-        agent.post('/api/register')
+        return agent.post('/api/register')
             .send(itUser)
             .then(function () {
                 return agent.post('/api/register')
@@ -48,7 +48,6 @@ describe('Related ITs', function () {
             })
             .then(function (results) {
                 otherUserToken = results.body.token;
-                done();
             });
     });
 
@@ -81,7 +80,7 @@ describe('Related ITs', function () {
             });
 
             describe('Daily', function () {
-                it('should get back the current weekly outcome', function (done) {
+                it('should get back the current weekly outcome', function () {
                     var currentWeeklyOutcome = {
                         typeName: 'Weekly',
                         firstStory: 'The First Weekly Story',
@@ -91,7 +90,8 @@ describe('Related ITs', function () {
                     };
 
                     var postOutcomeResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
                         .then(function (results) {
@@ -103,11 +103,10 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
-                            done();
                         });
                 });
 
-                it('should get back nothing if no current weekly outcome', function (done) {
+                it('should get back nothing if no current weekly outcome', function () {
                     var notThisWeek = moment().subtract(1, 'weeks');
                     var currentWeeklyOutcome = {
                         typeName: 'Weekly',
@@ -117,7 +116,7 @@ describe('Related ITs', function () {
                         effectiveDate: notThisWeek.toDate()
                     };
 
-                    agent.post('/api/outcomes')
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
                         .then(function () {
@@ -127,11 +126,10 @@ describe('Related ITs', function () {
                         })
                         .then(function (results) {
                             results.body.length.should.be.exactly(0);
-                            done();
                         });
                 });
 
-                it('should get back yesterdays outcome', function (done) {
+                it('should get back yesterdays outcome', function () {
                     var yesterday = moment().subtract(1, 'days');
                     var yesterdaysOutcome = {
                         typeName: 'Daily',
@@ -142,7 +140,8 @@ describe('Related ITs', function () {
                     };
 
                     var postOutcomeResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(yesterdaysOutcome)
                         .then(function (results) {
@@ -155,11 +154,10 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
-                            done();
                         });
                 });
 
-                it('should get back this months outcome', function (done) {
+                it('should get back this months outcome', function () {
                     var thisMonthsOutcome = {
                         typeName: 'Monthly',
                         firstStory: 'The First Monthly Story',
@@ -169,7 +167,8 @@ describe('Related ITs', function () {
                     };
 
                     var postOutcomeResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
                         .then(function (results) {
@@ -182,11 +181,10 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
-                            done();
                         });
                 });
 
-                it('should get back all related entries', function (done) {
+                it('should get back all related entries', function () {
                     var currentWeeklyOutcome = {
                         typeName: 'Weekly',
                         firstStory: 'The First Weekly Story',
@@ -215,7 +213,8 @@ describe('Related ITs', function () {
                     var postWeeklyOutcomeResults;
                     var yesterdaysOutcomeResults;
                     var thisMonthsOutcomeResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
                         .then(function (results) {
@@ -244,12 +243,11 @@ describe('Related ITs', function () {
                             results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
                             results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
                             results.body[2].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
-                            done();
                         });
 
                 });
 
-                it('should only get back related entries for the user', function (done) {
+                it('should only get back related entries for the user', function () {
                     var currentWeeklyOutcome = {
                         typeName: 'Weekly',
                         firstStory: 'The First Weekly Story',
@@ -278,7 +276,7 @@ describe('Related ITs', function () {
                     var postWeeklyOutcomeResults;
                     var yesterdaysOutcomeResults;
 
-                    agent.post('/api/outcomes')
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(currentWeeklyOutcome)
                         .then(function (results) {
@@ -304,13 +302,12 @@ describe('Related ITs', function () {
                             results.body.length.should.be.exactly(2);
                             results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
                             results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
-                            done();
                         })
                 });
             });
 
             describe('Weekly', function () {
-                it('should get back the last weekly reflection', function (done) {
+                it('should get back the last weekly reflection', function () {
                     var lastWeek = moment().subtract(1, 'weeks');
                     var lastWeeksReflection = {
                         typeName: 'Weekly',
@@ -324,7 +321,8 @@ describe('Related ITs', function () {
                     };
 
                     var postReflectionResults;
-                    agent.post('/api/reflections')
+
+                    return agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksReflection)
                         .then(function (results) {
@@ -337,12 +335,11 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
-                            done();
                         });
 
                 });
 
-                it('should get back nothing if no last weekly reflection', function (done) {
+                it('should get back nothing if no last weekly reflection', function () {
                     var notLastWeek = moment().subtract(2, 'weeks');
                     var notLastWeeksReflection = {
                         typeName: 'Weekly',
@@ -355,7 +352,7 @@ describe('Related ITs', function () {
                         effectiveDate: notLastWeek.toDate()
                     };
 
-                    agent.post('/api/reflections')
+                    return agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(notLastWeeksReflection)
                         .then(function () {
@@ -365,11 +362,10 @@ describe('Related ITs', function () {
                         })
                         .then(function (results) {
                             results.body.length.should.be.exactly(0);
-                            done();
                         });
                 });
 
-                it('should get back last weeks weekly outcome', function (done) {
+                it('should get back last weeks weekly outcome', function () {
                     var lastWeek = moment().subtract(1, 'weeks');
                     var lastWeeksOutcome = {
                         typeName: 'Weekly',
@@ -380,7 +376,8 @@ describe('Related ITs', function () {
                     };
 
                     var lastWeeksOutcomeResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
                         .then(function (results) {
@@ -393,11 +390,10 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                            done();
                         });
                 });
 
-                it('should get back this months outcome', function (done) {
+                it('should get back this months outcome', function () {
                     var thisMonthsOutcome = {
                         typeName: 'Monthly',
                         firstStory: 'The First Monthly Story',
@@ -407,7 +403,8 @@ describe('Related ITs', function () {
                     };
 
                     var postOutcomeResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
                         .then(function (results) {
@@ -420,12 +417,11 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(postOutcomeResults.body._id);
-                            done();
                         });
                 });
 
 
-                it('should get back all related entries', function (done) {
+                it('should get back all related entries', function () {
                     var lastWeek = moment().subtract(1, 'weeks');
                     var lastWeeksOutcome = {
                         typeName: 'Weekly',
@@ -459,7 +455,7 @@ describe('Related ITs', function () {
                     var lastWeeksReflectionResults;
                     var thisMonthsOutcomeResults;
 
-                    agent.post('/api/outcomes')
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
                         .then(function (results) {
@@ -488,11 +484,10 @@ describe('Related ITs', function () {
                             results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
                             results.body[1].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
                             results.body[2].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
-                            done();
                         });
                 });
 
-                it('should only get back related entries for the user', function (done) {
+                it('should only get back related entries for the user', function () {
                     var lastWeek = moment().subtract(1, 'weeks');
                     var lastWeeksOutcome = {
                         typeName: 'Weekly',
@@ -524,7 +519,7 @@ describe('Related ITs', function () {
                     var lastWeeksOutcomeResults;
                     var lastWeeksReflectionResults;
 
-                    agent.post('/api/outcomes')
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
                         .then(function (results) {
@@ -550,13 +545,12 @@ describe('Related ITs', function () {
                             results.body.length.should.be.exactly(2);
                             results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
                             results.body[1].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
-                            done();
                         });
                 })
             });
 
             describe('Monthly', function () {
-                it('should get back the last monthly reflection', function (done) {
+                it('should get back the last monthly reflection', function () {
                     var lastMonth = moment().subtract(1, 'months');
                     var lastMonthsReflection = {
                         typeName: 'Monthly',
@@ -570,7 +564,8 @@ describe('Related ITs', function () {
                     };
 
                     var postReflectionResults;
-                    agent.post('/api/reflections')
+
+                    return agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastMonthsReflection)
                         .then(function (results) {
@@ -583,12 +578,11 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
-                            done();
                         })
 
                 });
 
-                it('should get back nothing if no last monthly reflection', function (done) {
+                it('should get back nothing if no last monthly reflection', function () {
                     var notLastMonth = moment().subtract(2, 'months');
                     var notLastMonthsReflection = {
                         typeName: 'Monthly',
@@ -601,7 +595,7 @@ describe('Related ITs', function () {
                         effectiveDate: notLastMonth.toDate()
                     };
 
-                    agent.post('/api/reflections')
+                    return agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(notLastMonthsReflection)
                         .then(function () {
@@ -611,11 +605,10 @@ describe('Related ITs', function () {
                         })
                         .then(function (results) {
                             results.body.length.should.be.exactly(0);
-                            done();
                         });
                 });
 
-                it('should get back last months monthly outcome', function (done) {
+                it('should get back last months monthly outcome', function () {
                     var lastMonth = moment().subtract(1, 'months');
                     var lastMonthsOutcome = {
                         typeName: 'Monthly',
@@ -626,7 +619,8 @@ describe('Related ITs', function () {
                     };
 
                     var lastWeeksOutcomeResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastMonthsOutcome)
                         .then(function (results) {
@@ -639,11 +633,10 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                            done();
                         });
                 });
 
-                it('should get back all related entries', function (done) {
+                it('should get back all related entries', function () {
                     var lastMonth = moment().subtract(1, 'months');
                     var lastMonthsOutcome = {
                         typeName: 'Monthly',
@@ -666,7 +659,8 @@ describe('Related ITs', function () {
 
                     var lastMonthsOutcomeResults;
                     var lastMonthReflectionResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastMonthsOutcome)
                         .then(function (results) {
@@ -687,11 +681,10 @@ describe('Related ITs', function () {
                             results.body.length.should.be.exactly(2);
                             results.body[0].objectId.should.be.equal(lastMonthsOutcomeResults.body._id);
                             results.body[1].objectId.should.be.equal(lastMonthReflectionResults.body._id);
-                            done();
                         });
                 });
 
-                it('should only get back related entries for the user', function (done) {
+                it('should only get back related entries for the user', function () {
                     var lastMonth = moment().subtract(1, 'months');
                     var lastWeeksOutcome = {
                         typeName: 'Monthly',
@@ -722,7 +715,8 @@ describe('Related ITs', function () {
 
                     var lastMonthsOutcomeResults;
                     var lastMonthsReflectionResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksOutcome)
                         .then(function (results) {
@@ -748,8 +742,7 @@ describe('Related ITs', function () {
                             results.body.length.should.be.exactly(2);
                             results.body[0].objectId.should.be.equal(lastMonthsOutcomeResults.body._id);
                             results.body[1].objectId.should.be.equal(lastMonthsReflectionResults.body._id);
-                            done();
-                        })
+                        });
                 })
             })
         });
@@ -769,7 +762,7 @@ describe('Related ITs', function () {
             });
 
             describe('Weekly', function () {
-                it('should get back the last weekly reflection', function (done) {
+                it('should get back the last weekly reflection', function () {
                     var lastWeek = moment().subtract(1, 'weeks');
                     var lastWeeksReflection = {
                         typeName: 'Weekly',
@@ -783,7 +776,8 @@ describe('Related ITs', function () {
                     };
 
                     var postReflectionResults;
-                    agent.post('/api/reflections')
+
+                    return agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastWeeksReflection)
                         .then(function (results) {
@@ -797,12 +791,11 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
-                            done();
                         });
 
                 });
 
-                it('should get back nothing if no last weekly reflection', function (done) {
+                it('should get back nothing if no last weekly reflection', function () {
                     var notLastWeek = moment().subtract(2, 'weeks');
                     var notLastWeeksReflection = {
                         typeName: 'Weekly',
@@ -815,7 +808,7 @@ describe('Related ITs', function () {
                         effectiveDate: notLastWeek.toDate()
                     };
 
-                    agent.post('/api/reflections')
+                    return agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(notLastWeeksReflection)
                         .then(function () {
@@ -825,11 +818,10 @@ describe('Related ITs', function () {
                         })
                         .then(function (results) {
                             results.body.length.should.be.exactly(0);
-                            done();
                         });
                 });
 
-                it('should get back current weekly outcome', function (done) {
+                it('should get back current weekly outcome', function () {
                     var thisWeeksOutcome = {
                         typeName: 'Weekly',
                         firstStory: 'The First Weekly Story',
@@ -839,7 +831,7 @@ describe('Related ITs', function () {
                     };
 
                     var thisWeeksOutcomeResults;
-                    agent.post('/api/outcomes')
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisWeeksOutcome)
                         .then(function (results) {
@@ -853,11 +845,10 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                            done();
                         })
                 });
 
-                it('should get back all related entries', function (done) {
+                it('should get back all related entries', function () {
                     var lastWeek = moment().subtract(1, 'weeks');
                     var thisWeeksOutcome = {
                         typeName: 'Weekly',
@@ -880,7 +871,8 @@ describe('Related ITs', function () {
 
                     var thisWeeksOutcomeResults;
                     var lastWeeksReflectionResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisWeeksOutcome)
                         .then(function (results) {
@@ -902,11 +894,10 @@ describe('Related ITs', function () {
                             results.body.length.should.be.exactly(2);
                             results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
                             results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                            done();
                         })
                 });
 
-                it('should only get back related entries for the user', function (done) {
+                it('should only get back related entries for the user', function () {
                     var lastWeek = moment().subtract(1, 'weeks');
                     var thisWeeksOutcome = {
                         typeName: 'Weekly',
@@ -937,7 +928,8 @@ describe('Related ITs', function () {
 
                     var thisWeeksOutcomeResults;
                     var lastWeeksReflectionResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisWeeksOutcome)
                         .then(function (results) {
@@ -964,12 +956,11 @@ describe('Related ITs', function () {
                             results.body.length.should.be.exactly(2);
                             results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
                             results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                            done();
                         })
                 });
 
                 describe('effectiveDate param', function () {
-                    it('should get back based on effectiveDate sent in', function (done) {
+                    it('should get back based on effectiveDate sent in', function () {
                         var lastWeek = moment().subtract(1, 'weeks');
                         var twoWeeksAgo = moment().subtract(2, 'weeks');
                         var lastWeeksOutcome = {
@@ -993,7 +984,8 @@ describe('Related ITs', function () {
 
                         var lastWeeksOutcomeResults;
                         var twoWeeksAgoReflectionResults;
-                        agent.post('/api/outcomes')
+
+                        return agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
                             .send(lastWeeksOutcome)
                             .then(function (results) {
@@ -1015,14 +1007,13 @@ describe('Related ITs', function () {
                                 results.body.length.should.be.exactly(2);
                                 results.body[0].objectId.should.be.equal(twoWeeksAgoReflectionResults.body._id);
                                 results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                                done();
                             });
                     });
                 });
             });
 
             describe('Monthly', function () {
-                it('should get back the last monthly reflection', function (done) {
+                it('should get back the last monthly reflection', function () {
                     var lastMonth = moment().subtract(1, 'months');
                     var lastMonthsReflection = {
                         typeName: 'Monthly',
@@ -1036,7 +1027,8 @@ describe('Related ITs', function () {
                     };
 
                     var postReflectionResults;
-                    agent.post('/api/reflections')
+
+                    return agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(lastMonthsReflection)
                         .then(function (results) {
@@ -1050,12 +1042,11 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(postReflectionResults.body._id);
-                            done();
                         });
 
                 });
 
-                it('should get back nothing if no last monthly reflection', function (done) {
+                it('should get back nothing if no last monthly reflection', function () {
                     var notLastMonth = moment().subtract(2, 'months');
                     var notLastMonthsReflection = {
                         typeName: 'Monthly',
@@ -1068,7 +1059,7 @@ describe('Related ITs', function () {
                         effectiveDate: notLastMonth.toDate()
                     };
 
-                    agent.post('/api/reflections')
+                    return agent.post('/api/reflections')
                         .set('Authorization', 'bearer ' + token)
                         .send(notLastMonthsReflection)
                         .then(function () {
@@ -1078,11 +1069,10 @@ describe('Related ITs', function () {
                         })
                         .then(function (results) {
                             results.body.length.should.be.exactly(0);
-                            done();
                         })
                 });
 
-                it('should get back current monthly outcome', function (done) {
+                it('should get back current monthly outcome', function () {
                     var thisMonthsOutcome = {
                         typeName: 'Monthly',
                         firstStory: 'The First Weekly Story',
@@ -1092,7 +1082,8 @@ describe('Related ITs', function () {
                     };
 
                     var thisWeeksOutcomeResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
                         .then(function (results) {
@@ -1106,11 +1097,10 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(1);
                             results.body[0].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                            done();
                         })
                 });
 
-                it('should get back all related entries', function (done) {
+                it('should get back all related entries', function () {
                     var lastMonth = moment().subtract(1, 'months');
                     var thisMonthsOutcome = {
                         typeName: 'Monthly',
@@ -1133,7 +1123,8 @@ describe('Related ITs', function () {
 
                     var thisMonthsOutcomeResults;
                     var lastMonthsReflectionResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
                         .then(function (results) {
@@ -1155,11 +1146,10 @@ describe('Related ITs', function () {
                             results.body.length.should.be.exactly(2);
                             results.body[0].objectId.should.be.equal(lastMonthsReflectionResults.body._id);
                             results.body[1].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
-                            done();
                         })
                 });
 
-                it('should only get back related entries for the user', function (done) {
+                it('should only get back related entries for the user', function () {
                     var lastMonth = moment().subtract(1, 'months');
                     var thisMonthsOutcome = {
                         typeName: 'Monthly',
@@ -1190,7 +1180,8 @@ describe('Related ITs', function () {
 
                     var thisWeeksOutcomeResults;
                     var lastWeeksReflectionResults;
-                    agent.post('/api/outcomes')
+
+                    return agent.post('/api/outcomes')
                         .set('Authorization', 'bearer ' + token)
                         .send(thisMonthsOutcome)
                         .then(function (results) {
@@ -1217,12 +1208,11 @@ describe('Related ITs', function () {
                             results.body.length.should.be.exactly(2);
                             results.body[0].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
                             results.body[1].objectId.should.be.equal(thisWeeksOutcomeResults.body._id);
-                            done();
                         })
                 });
 
                 describe('effectiveDate param', function () {
-                    it('should get back based on effectiveDate sent in', function (done) {
+                    it('should get back based on effectiveDate sent in', function () {
                         var lastMonth = moment().subtract(1, 'months');
                         var twoMonthsAgo = moment().subtract(2, 'months');
                         var lastMonthsOutcome = {
@@ -1246,7 +1236,8 @@ describe('Related ITs', function () {
 
                         var lastWeeksOutcomeResults;
                         var twoWeeksAgoReflectionResults;
-                        agent.post('/api/outcomes')
+
+                        return agent.post('/api/outcomes')
                             .set('Authorization', 'bearer ' + token)
                             .send(lastMonthsOutcome)
                             .then(function (results) {
@@ -1268,7 +1259,6 @@ describe('Related ITs', function () {
                                 results.body.length.should.be.exactly(2);
                                 results.body[0].objectId.should.be.equal(twoWeeksAgoReflectionResults.body._id);
                                 results.body[1].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                                done();
                             });
                     });
                 });

@@ -12,7 +12,7 @@ var should = require('should'),
 
 describe('Outcome ITs', function () {
 
-    beforeEach(function (done) {
+    beforeEach(function () {
         delete require.cache[require.resolve('../../app.js')];
         server = require('../../app.js');
         agent = request.agent(server);
@@ -29,7 +29,7 @@ describe('Outcome ITs', function () {
             password: 'password'
         };
 
-        agent.post('/api/register')
+        return agent.post('/api/register')
             .send(itUser)
             .then(function () {
                 return agent.post('/api/register')
@@ -46,7 +46,6 @@ describe('Outcome ITs', function () {
             })
             .then(function (results) {
                 otherUserToken = results.body.token;
-                done();
             });
     });
 
@@ -63,7 +62,7 @@ describe('Outcome ITs', function () {
     describe('/activeEntries', function () {
 
         describe('get', function () {
-            it('return all active entries', function (done) {
+            it('return all active entries', function () {
                 var activeDailyOutcome = {
                     typeName: 'Daily',
                     firstStory: 'The First Story',
@@ -91,7 +90,8 @@ describe('Outcome ITs', function () {
                 var dailyResults;
                 var weeklyResults;
                 var monthlyResults;
-                agent.post('/api/outcomes')
+
+                return agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .then(function (results) {
@@ -118,11 +118,10 @@ describe('Outcome ITs', function () {
                         results.body[0].objectId.should.be.equal(monthlyResults.body._id);
                         results.body[1].objectId.should.be.equal(weeklyResults.body._id);
                         results.body[2].objectId.should.be.equal(dailyResults.body._id);
-                        done();
                     });
             });
 
-            it('should return only entries for the user', function (done) {
+            it('should return only entries for the user', function () {
                 var activeDailyOutcome = {
                     typeName: 'Daily',
                     firstStory: 'The First Story',
@@ -140,7 +139,7 @@ describe('Outcome ITs', function () {
                 };
 
                 var dailyResults;
-                agent.post('/api/outcomes')
+                return agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .then(function (results) {
@@ -158,11 +157,10 @@ describe('Outcome ITs', function () {
                     .then(function (results) {
                         results.body.length.should.be.exactly(1);
                         results.body[0].objectId.should.be.equal(dailyResults.body._id);
-                        done();
                     });
             });
 
-            it('should only get todays daily outcome if that is what is there', function (done) {
+            it('should only get todays daily outcome if that is what is there', function () {
                 var activeDailyOutcome = {
                     typeName: 'Daily',
                     firstStory: 'The First Story',
@@ -181,7 +179,8 @@ describe('Outcome ITs', function () {
                 };
 
                 var dailyResults;
-                agent.post('/api/outcomes')
+
+                return agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .then(function (results) {
@@ -199,11 +198,10 @@ describe('Outcome ITs', function () {
                     .then(function (results) {
                         results.body.length.should.be.exactly(1);
                         results.body[0].objectId.should.be.equal(dailyResults.body._id);
-                        done();
                     });
             });
 
-            it('should only get this weeks weekly outcome if that is what is there', function (done) {
+            it('should only get this weeks weekly outcome if that is what is there', function () {
                 var yesterday = moment().subtract(1, 'days');
                 var activeDailyOutcome = {
                     typeName: 'Daily',
@@ -222,7 +220,8 @@ describe('Outcome ITs', function () {
                 };
 
                 var weeklyResults;
-                agent.post('/api/outcomes')
+
+                return agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .then(function () {
@@ -240,11 +239,10 @@ describe('Outcome ITs', function () {
                     .then(function (results) {
                         results.body.length.should.be.exactly(1);
                         results.body[0].objectId.should.be.equal(weeklyResults.body._id);
-                        done();
                     });
             });
 
-            it('should only get this months outcome if that is what is there', function (done) {
+            it('should only get this months outcome if that is what is there', function () {
                 var yesterday = moment().subtract(1, 'days');
                 var activeDailyOutcome = {
                     typeName: 'Daily',
@@ -263,7 +261,8 @@ describe('Outcome ITs', function () {
                 };
 
                 var monthlyResults;
-                agent.post('/api/outcomes')
+
+                return agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .then(function () {
@@ -281,11 +280,10 @@ describe('Outcome ITs', function () {
                     .then(function (results) {
                         results.body.length.should.be.exactly(1);
                         results.body[0].objectId.should.be.equal(monthlyResults.body._id);
-                        done();
                     });
             });
 
-            it('should get nothing if there are no active entires', function (done) {
+            it('should get nothing if there are no active entires', function () {
                 var yesterday = moment().subtract(1, 'days');
                 var activeDailyOutcome = {
                     typeName: 'Daily',
@@ -314,7 +312,7 @@ describe('Outcome ITs', function () {
                 };
 
 
-                agent.post('/api/outcomes')
+                return agent.post('/api/outcomes')
                     .set('Authorization', 'bearer ' + token)
                     .send(activeDailyOutcome)
                     .then(function () {
@@ -335,7 +333,6 @@ describe('Outcome ITs', function () {
                     })
                     .then(function (results) {
                         results.body.length.should.be.exactly(0);
-                        done();
                     });
             });
 

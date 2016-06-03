@@ -11,7 +11,7 @@ var should = require('should'),
 
 describe('Hot Spot Bucket ITs', function () {
 
-    beforeEach(function (done) {
+    beforeEach(function () {
         delete require.cache[require.resolve('../../app.js')];
         server = require('../../app.js');
         agent = request.agent(server);
@@ -28,7 +28,7 @@ describe('Hot Spot Bucket ITs', function () {
             password: 'password'
         };
 
-        agent.post('/api/register')
+        return agent.post('/api/register')
             .send(itUser)
             .then(function () {
                 return agent.post('/api/register')
@@ -45,7 +45,6 @@ describe('Hot Spot Bucket ITs', function () {
             })
             .then(function (results) {
                 otherUserToken = results.body.token;
-                done();
             });
     });
 
@@ -62,13 +61,13 @@ describe('Hot Spot Bucket ITs', function () {
     describe('/hotSpotBuckets', function () {
 
         describe('post', function () {
-            it('should allow a hotSpotBucket to be posted properly', function (done) {
+            it('should allow a hotSpotBucket to be posted properly', function () {
                 var hotSpotBucket = {
                     name: 'Hot Spot Bucket Name',
                     hotSpots: ['Test']
                 };
 
-                agent.post('/api/hotSpotBuckets')
+                return agent.post('/api/hotSpotBuckets')
                     .set('Authorization', 'bearer ' + token)
                     .send(hotSpotBucket)
                     .expect(201)
@@ -76,7 +75,6 @@ describe('Hot Spot Bucket ITs', function () {
                         results.body.should.have.property('objectId');
                         results.body.should.have.property('name', hotSpotBucket.name);
                         results.body.should.have.property('hotSpots', hotSpotBucket.hotSpots);
-                        done();
                     });
             });
 
@@ -120,7 +118,7 @@ describe('Hot Spot Bucket ITs', function () {
                 hotSpotBucket3,
                 otherUsersHotSpotBucket;
 
-            beforeEach(function (done) {
+            beforeEach(function () {
                 hotSpotBucket1 = {
                     name: 'Hot Spot Bucket 1 Name',
                     hotSpots: ['Test']
@@ -141,7 +139,7 @@ describe('Hot Spot Bucket ITs', function () {
                     hotSpots: ['Test', 'Test1232']
                 };
 
-                agent.post('/api/hotSpotBuckets')
+                return agent.post('/api/hotSpotBuckets')
                     .set('Authorization', 'bearer ' + token)
                     .send(hotSpotBucket1)
                     .then(function () {
@@ -158,14 +156,11 @@ describe('Hot Spot Bucket ITs', function () {
                         return agent.post('/api/hotSpotBuckets')
                             .set('Authorization', 'bearer ' + otherUserToken)
                             .send(otherUsersHotSpotBucket);
-                    })
-                    .then(function () {
-                        done();
-                    })
+                    });
             });
 
-            it('should get all hotSpotBuckets', function (done) {
-                agent.get('/api/hotSpotBuckets')
+            it('should get all hotSpotBuckets', function () {
+                return agent.get('/api/hotSpotBuckets')
                     .set('Authorization', 'bearer ' + token)
                     .expect(200)
                     .then(function (results) {
@@ -182,13 +177,11 @@ describe('Hot Spot Bucket ITs', function () {
                         results.body[2].should.have.property('objectId');
                         results.body[2].should.have.property('name', hotSpotBucket3.name);
                         results.body[2].should.have.property('hotSpots', hotSpotBucket3.hotSpots);
-
-                        done();
                     });
             });
 
-            it('should only get hotSpotBuckets for that user', function (done) {
-                agent.get('/api/hotSpotBuckets')
+            it('should only get hotSpotBuckets for that user', function () {
+                return agent.get('/api/hotSpotBuckets')
                     .set('Authorization', 'bearer ' + otherUserToken)
                     .expect(200)
                     .then(function (results) {
@@ -197,8 +190,6 @@ describe('Hot Spot Bucket ITs', function () {
                         results.body[0].should.have.property('objectId');
                         results.body[0].should.have.property('name', otherUsersHotSpotBucket.name);
                         results.body[0].should.have.property('hotSpots', otherUsersHotSpotBucket.hotSpots);
-
-                        done();
                     });
             });
 
@@ -215,7 +206,7 @@ describe('Hot Spot Bucket ITs', function () {
             originalHotSpotBucket,
             originalOtherUsersHotSpotBucket;
 
-        beforeEach(function (done) {
+        beforeEach(function () {
             hotSpotBucket = {
                 name: 'Hot Spot Bucket Name',
                 hotSpots: ['Test', 'Test1232']
@@ -226,7 +217,7 @@ describe('Hot Spot Bucket ITs', function () {
                     hotSpots: ['Test', 'Test1232']
             };
 
-            agent.post('/api/hotSpotBuckets')
+            return agent.post('/api/hotSpotBuckets')
                 .set('Authorization', 'bearer ' + token)
                 .send(hotSpotBucket)
                 .then(function (results) {
@@ -238,27 +229,25 @@ describe('Hot Spot Bucket ITs', function () {
                 })
                 .then(function (results) {
                     originalOtherUsersHotSpotBucket = results.body;
-                    done();
                 });
         });
 
         describe('put', function () {
 
-            it('should be able to put an object', function (done) {
+            it('should be able to put an object', function () {
                 var newName = 'New Name';
                 var newHotSpots = ['test123', 'test1234', 'derp'];
 
                 hotSpotBucket.name = newName;
                 hotSpotBucket.hotSpots = newHotSpots;
 
-                agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket.objectId)
+                return agent.put('/api/hotSpotBuckets/' + originalHotSpotBucket.objectId)
                     .set('Authorization', 'bearer ' + token)
                     .send(hotSpotBucket)
                     .expect(200)
                     .then(function (results) {
                         results.body.should.have.property('name', newName);
                         results.body.should.have.property('hotSpots', newHotSpots);
-                        done();
                     });
             });
 

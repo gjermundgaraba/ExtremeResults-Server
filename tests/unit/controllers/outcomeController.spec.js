@@ -21,7 +21,8 @@ describe("Outcome Controller", function() {
         mongooseQueryMock = {
             exec: function () {},
             limit: function () {},
-            skip: function () {}
+            skip: function () {},
+            sort: function () {}
         };
 
         responseMock = {
@@ -83,6 +84,16 @@ describe("Outcome Controller", function() {
                 expect(secondOutcome.thirdStory).toEqual(fakeOutcomes[1].thirdStory);
                 expect(secondOutcome.effectiveDate).toEqual(fakeOutcomes[1].effectiveDate);
                 expect(secondOutcome.className).toEqual('Outcome');
+            });
+            
+            it('should call sort descending on effectiveDate', function () {
+                spyOn(OutcomeMock, 'find').and.returnValue(mongooseQueryMock);
+                spyOn(responseMock, 'json');
+                spyOn(mongooseQueryMock, 'sort');
+
+                outcomeController.get(requestMock, responseMock);
+
+                expect(mongooseQueryMock.sort).toHaveBeenCalledWith({effectiveDate: 'descending'});
             });
 
             it('should send back status code 500 on failure', function () {
