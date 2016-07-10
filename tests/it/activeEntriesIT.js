@@ -62,13 +62,13 @@ describe('Outcome ITs', function () {
     describe('/activeEntries', function () {
 
         describe('get', function () {
-            it('return all active entries', function () {
+            it('should return all active entries', function () {
                 var activeDailyOutcome = {
                     typeName: 'Daily',
                     firstStory: 'The First Story',
                     secondStory: 'The Second Story',
                     thirdStory: 'The Third Story',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(1, 'minutes')
                 };
 
                 var activeWeeklyOutcome = {
@@ -76,7 +76,7 @@ describe('Outcome ITs', function () {
                     firstStory: 'The First Story',
                     secondStory: 'The Second Story',
                     thirdStory: 'The Third Story',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(2, 'minutes')
                 };
 
                 var activeMonthlyOutcome = {
@@ -84,7 +84,7 @@ describe('Outcome ITs', function () {
                     firstStory: 'The First Story',
                     secondStory: 'The Second Story',
                     thirdStory: 'The Third Story',
-                    effectiveDate: new Date()
+                    effectiveDate: moment().add(3, 'minutes')
                 };
 
                 var dailyResults;
