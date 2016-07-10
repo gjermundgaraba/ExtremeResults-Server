@@ -115,9 +115,9 @@ describe('Outcome ITs', function () {
                     })
                     .then(function (results) {
                         results.body.length.should.be.exactly(3);
-                        results.body[0].objectId.should.be.equal(monthlyResults.body._id);
+                        results.body[0].objectId.should.be.equal(dailyResults.body._id);
                         results.body[1].objectId.should.be.equal(weeklyResults.body._id);
-                        results.body[2].objectId.should.be.equal(dailyResults.body._id);
+                        results.body[2].objectId.should.be.equal(monthlyResults.body._id);
                     });
             });
 

@@ -240,8 +240,8 @@ describe('Related ITs', function () {
                         })
                         .then(function (results) {
                             results.body.length.should.be.exactly(3);
-                            results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
-                            results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
+                            results.body[0].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
+                            results.body[1].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
                             results.body[2].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
                         });
 
@@ -300,8 +300,8 @@ describe('Related ITs', function () {
                         })
                         .then(function (results) {
                             results.body.length.should.be.exactly(2);
-                            results.body[0].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
-                            results.body[1].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
+                            results.body[0].objectId.should.be.equal(yesterdaysOutcomeResults.body._id);
+                            results.body[1].objectId.should.be.equal(postWeeklyOutcomeResults.body._id);
                         })
                 });
             });
@@ -482,8 +482,8 @@ describe('Related ITs', function () {
                         .then(function (results) {
                             results.body.length.should.be.exactly(3);
                             results.body[0].objectId.should.be.equal(lastWeeksOutcomeResults.body._id);
-                            results.body[1].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
-                            results.body[2].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                            results.body[1].objectId.should.be.equal(lastWeeksReflectionResults.body._id);
+                            results.body[2].objectId.should.be.equal(thisMonthsOutcomeResults.body._id);
                         });
                 });
 

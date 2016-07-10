@@ -1,3 +1,5 @@
+var logicalEntrySorter = require('../utils/logicalEntrySorter');
+
 var relatedForOutcomesController = function (Outcome, Reflection, moment) {
 
     var get = function (req, res) {
@@ -57,6 +59,8 @@ var relatedForOutcomesController = function (Outcome, Reflection, moment) {
                            className: 'Outcome'
                        });
                    });
+
+                   logicalEntrySorter.performSort(related);
 
                    res.json(related);
                }
@@ -130,6 +134,8 @@ var relatedForOutcomesController = function (Outcome, Reflection, moment) {
                                });
                            });
 
+                           logicalEntrySorter.performSort(related);
+
                            res.json(related);
                        }
                    });
@@ -185,6 +191,8 @@ var relatedForOutcomesController = function (Outcome, Reflection, moment) {
                                     className: 'Reflection'
                                 });
                             });
+
+                            logicalEntrySorter.performSort(related);
 
                             res.json(related);
                         }

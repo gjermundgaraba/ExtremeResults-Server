@@ -1,3 +1,5 @@
+var logicalEntrySorter = require('../utils/logicalEntrySorter');
+
 var relatedForReflectionsController = function (Outcome, Reflection, moment) {
 
     var get = function (req, res) {
@@ -97,6 +99,8 @@ var relatedForReflectionsController = function (Outcome, Reflection, moment) {
                                     className: 'Outcome'
                                 });
                             });
+
+                            logicalEntrySorter.performSort(related);
 
                             res.json(related);
                         }

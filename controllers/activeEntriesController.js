@@ -1,3 +1,5 @@
+var logicalEntrySorter = require('../utils/logicalEntrySorter');
+
 var activeEntriesController = function (Outcome, moment) {
 
     var get = function (req, res) {
@@ -54,6 +56,8 @@ var activeEntriesController = function (Outcome, moment) {
                         className: 'Outcome'
                     })
                 });
+                
+                logicalEntrySorter.performSort(entries);
 
                 res.json(entries);
             }
