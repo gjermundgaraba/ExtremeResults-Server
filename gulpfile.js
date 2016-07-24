@@ -12,10 +12,6 @@ gulp.task('default', function () {
         exec: 'node',
         script: 'app.js',
         ext: 'js',
-        env: {
-            MONGO_SERVER: 'mongodb://localhost/xr',
-            PORT: 4321
-        },
         ignore: ['./node_modules/**', 'spec/**']
     }).on('restart', function () {
         console.log('Restarting...');

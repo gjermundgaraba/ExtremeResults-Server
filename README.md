@@ -30,6 +30,15 @@ To build and run the application, you can just use
 npm start
 ```
 
+When starting the application, there are several environment variables that are searched for, but none of them are required:
+
+| Environment Variable	| Description	    | Default Value                 |
+| --------------------	| -----------	    | -------------                 |
+| PORT			        | Server port	    | 4321		                    |
+| MONGO_SERVER          | Mongo server url  | mongodb://localhost/xr        |
+| MONGO_USERNAME        | Mongo username    | Nothing - for no auth server  |     
+| MONGO_PASSWORD        | Monog passowrd    | Nothing - for no auth server  |
+
 
 #### Tests
 

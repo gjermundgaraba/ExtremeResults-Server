@@ -19,7 +19,8 @@ if (typeof process.env.MONGO_USERNAME !== 'undefined') {
     }
 }
 
-var db = mongoose.connect(process.env.MONGO_SERVER, mongoOptions);
+var mongoServer = process.env.MONGO_SERVER ? process.env.MONGO_SERVER : "mongodb://localhost/xr";
+var db = mongoose.connect(mongoServer, mongoOptions);
 
 var User = require('./models/userModel');
 var Outcome = require('./models/outcomeModel');
@@ -61,7 +62,7 @@ passport.use(new BearerStrategy(
 ));
 
 var app = express();
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 4321;
 
 app.use(cors());
 app.use(bodyParser.urlencoded({extended:true}));
