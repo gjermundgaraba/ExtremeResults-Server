@@ -27,7 +27,7 @@ var Outcome = require('./models/outcomeModel');
 var Reflection = require('./models/reflectionModel');
 var HotSpotBucket = require('./models/hotSpotBucketModel');
 
-var tempSecret = 'to-be-changed'; // TODO: Make secret not hardcoded into the program
+var secret = process.env.SECRET ? process.env.SECRET : 'not-so-secret';
 
 passport.use(new LocalStrategy(
     function(username, password, done) {
@@ -52,7 +52,7 @@ passport.use(new LocalStrategy(
 
 passport.use(new BearerStrategy(
     function(token, done) {
-        var decoded = jwt.decode(token, tempSecret);
+        var decoded = jwt.decode(token, secret);
         User.findOne({'local.username': decoded.username}, function(err, user) {
             if (err) { return done(err); }
             if (!user) { return done(null, false); }
@@ -69,8 +69,8 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 
-var registerRouter = require('./routes/registerRoutes')(User, tempSecret);
-var loginRouter = require('./routes/loginRoutes')(User, passport, tempSecret);
+var registerRouter = require('./routes/registerRoutes')(User, secret);
+var loginRouter = require('./routes/loginRoutes')(User, passport, secret);
 var outcomeRouter = require('./routes/outcomeRoutes')(Outcome, passport);
 var reflectionRouter = require('./routes/reflectionRoutes')(Reflection, passport);
 var hotSpotBucketRouter = require('./routes/hotSpotBucketRoutes')(HotSpotBucket, passport);
