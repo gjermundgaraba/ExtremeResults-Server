@@ -85,7 +85,7 @@ app.use('/api/reflections', reflectionRouter);
 app.use('/api/hotSpotBuckets', hotSpotBucketRouter);
 app.use('/api/related', relatedRouter);
 app.use('/api/activeEntries', activeEntriesRouter);
-app.use('/api/forTest', forTestRouter);
+/*app.use('/api/forTest', forTestRouter); */
 
 
 var server = app.listen(port);
